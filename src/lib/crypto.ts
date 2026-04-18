@@ -127,9 +127,9 @@ export async function unlockIdentityPrivateKey(passphrase?: string): Promise<Cry
   if (!rec) throw new Error("No identity key found");
   const key = await deriveWrappingKey({ mode: rec.wrappingMode, passphrase });
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: fromB64(rec.privateKeyIv).buffer },
+    { name: "AES-GCM", iv: toArrayBuffer(fromB64(rec.privateKeyIv)) },
     key,
-    fromB64(rec.encryptedPrivateKey).buffer
+    toArrayBuffer(fromB64(rec.encryptedPrivateKey))
   );
   return crypto.subtle.importKey(
     "pkcs8",
@@ -152,9 +152,9 @@ export async function encryptMoteContent(plaintext: string, symmetricKey: Crypto
 
 export async function decryptMoteContent(ciphertextB64: string, ivB64: string, symmetricKey: CryptoKey): Promise<string> {
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: fromB64(ivB64).buffer },
+    { name: "AES-GCM", iv: toArrayBuffer(fromB64(ivB64)) },
     symmetricKey,
-    fromB64(ciphertextB64).buffer
+    toArrayBuffer(fromB64(ciphertextB64))
   );
   return decoder.decode(decrypted);
 }
@@ -215,4 +215,8 @@ function fromB64(input: string): Uint8Array {
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
   return bytes;
+}
+
+function toArrayBuffer(input: Uint8Array): ArrayBuffer {
+  return input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) as ArrayBuffer;
 }
