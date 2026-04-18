@@ -57,6 +57,7 @@ export default {
 };
 
 async function handleRequest(request, env, ctx) {
+  setRuntimeEnv(env);
   const url = new URL(request.url);
   const { pathname } = url;
 
@@ -923,6 +924,7 @@ function normalizeBook(item) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function jsonResponse(data, status = 200, extraHeaders = {}) {
+  const env = getRuntimeEnv();
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -948,6 +950,14 @@ function corsPreflightResponse(env) {
       'Access-Control-Max-Age': '86400',
     },
   });
+}
+
+let runtimeEnv = null;
+function setRuntimeEnv(env) {
+  runtimeEnv = env || null;
+}
+function getRuntimeEnv() {
+  return runtimeEnv || null;
 }
 
 function getRateLimitKey(pathname, ip) {
