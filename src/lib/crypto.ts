@@ -16,6 +16,13 @@ export type IdentityContext = {
   bundle: PublicPreKeyBundle;
 };
 
+export type X3DHPeerBundle = {
+  userId: string;
+  identityKey: string;
+  signedPreKey: string;
+  oneTimePreKey?: string;
+};
+
 type DeriveKeyInput = {
   mode: "webauthn-prf" | "passphrase-fallback";
   passphrase?: string;
@@ -159,6 +166,72 @@ export async function decryptMoteContent(ciphertextB64: string, ivB64: string, s
   return decoder.decode(decrypted);
 }
 
+export async function initializeX3DHSession(
+  peer: X3DHPeerBundle,
+  passphrase?: string
+): Promise<{ sessionId: string; sharedSecretB64: string }> {
+  const localPrivate = await unlockIdentityPrivateKey(passphrase);
+  const peerIdentityPub = await crypto.subtle.importKey(
+    "raw",
+    toArrayBuffer(fromB64(peer.identityKey)),
+    { name: "X25519", namedCurve: "X25519" },
+    false,
+    []
+  );
+  const peerSignedPreKey = await crypto.subtle.importKey(
+    "raw",
+    toArrayBuffer(fromB64(peer.signedPreKey)),
+    { name: "X25519", namedCurve: "X25519" },
+    false,
+    []
+  );
+  const eph = await crypto.subtle.generateKey(
+    { name: "X25519", namedCurve: "X25519" },
+    true,
+    ["deriveBits"]
+  );
+
+  const dh1 = await crypto.subtle.deriveBits({ name: "X25519", public: peerSignedPreKey }, localPrivate, 256);
+  const dh2 = await crypto.subtle.deriveBits({ name: "X25519", public: peerIdentityPub }, eph.privateKey, 256);
+  const shared = await hkdfMerge([new Uint8Array(dh1), new Uint8Array(dh2)], "osanwall-x3dh");
+
+  const ephPrivatePkcs8 = await crypto.subtle.exportKey("pkcs8", eph.privateKey);
+  const wrapIv = crypto.getRandomValues(new Uint8Array(12));
+  const wrapKey = await deriveWrappingKey({ mode: supportsWebAuthnPRF() ? "webauthn-prf" : "passphrase-fallback", passphrase });
+  const encryptedEph = await crypto.subtle.encrypt({ name: "AES-GCM", iv: wrapIv }, wrapKey, ephPrivatePkcs8);
+
+  const sessionId = `${peer.userId}:${Date.now()}`;
+  await db.ratchetSessions.put({
+    id: sessionId,
+    peerUserId: peer.userId,
+    rootKey: toB64(shared),
+    sendingChainKey: toB64(shared.slice(0, 16)),
+    receivingChainKey: toB64(shared.slice(16)),
+    currentDhPublicKey: toB64(await crypto.subtle.exportKey("raw", eph.publicKey)),
+    currentDhPrivateKeyEncrypted: `${toB64(wrapIv)}.${toB64(encryptedEph)}`,
+    messageNumberSend: 0,
+    messageNumberRecv: 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  return { sessionId, sharedSecretB64: toB64(shared) };
+}
+
+export async function rotateSessionMessageKey(sessionId: string): Promise<string> {
+  const session = await db.ratchetSessions.get(sessionId);
+  if (!session) throw new Error("Session not found");
+  const next = await hkdfMerge([fromB64(session.sendingChainKey)], "osanwall-ratchet-step");
+  const messageKey = next.slice(0, 16);
+  const chainKey = next.slice(16);
+  await db.ratchetSessions.update(sessionId, {
+    sendingChainKey: toB64(chainKey),
+    messageNumberSend: session.messageNumberSend + 1,
+    updatedAt: Date.now(),
+  });
+  return toB64(messageKey);
+}
+
 async function deriveWrappingKey(input: DeriveKeyInput): Promise<CryptoKey> {
   let seedMaterial = "osanwall-default-fallback";
   if (input.mode === "webauthn-prf") {
@@ -201,6 +274,28 @@ async function derivePRFSeed(): Promise<string> {
   const challenge = crypto.getRandomValues(new Uint8Array(32));
   if (!window.PublicKeyCredential) return toB64(challenge);
   return toB64(challenge);
+}
+
+async function hkdfMerge(chunks: Uint8Array[], info: string): Promise<Uint8Array> {
+  const sourceLen = chunks.reduce((acc, c) => acc + c.byteLength, 0);
+  const source = new Uint8Array(sourceLen);
+  let o = 0;
+  for (const c of chunks) {
+    source.set(c, o);
+    o += c.byteLength;
+  }
+  const key = await crypto.subtle.importKey("raw", source, "HKDF", false, ["deriveBits"]);
+  const derived = await crypto.subtle.deriveBits(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt: encoder.encode("osanwall-hkdf-v1"),
+      info: encoder.encode(info),
+    },
+    key,
+    256
+  );
+  return new Uint8Array(derived);
 }
 
 function toB64(input: BufferSource): string {
