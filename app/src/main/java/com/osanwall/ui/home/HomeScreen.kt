@@ -30,8 +30,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.osanwall.ui.components.GlassCard
+import com.osanwall.ui.components.OsanWallActionSheet
 import com.osanwall.ui.components.UserAvatar
 
 @Composable
@@ -54,6 +58,7 @@ fun HomeScreen(
 ) {
     val trending by viewModel.trendingMovies.collectAsState()
     val suggestedCreators = listOf("@LunaSky", "@Vertex", "@NeonJace", "@Minimal_")
+    var showCreateSheet by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -198,7 +203,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                onClick = onOpenExplore
+                onClick = { showCreateSheet = true }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -226,6 +231,16 @@ fun HomeScreen(
             }
             Spacer(Modifier.height(8.dp))
         }
+    }
+
+    if (showCreateSheet) {
+        OsanWallActionSheet(
+            title = "Create on Osanwall",
+            subtitle = "Choose a format to post: thought, song, movie, or book.",
+            primaryLabel = "Start Creating",
+            onDismiss = { showCreateSheet = false },
+            onPrimary = onOpenExplore
+        )
     }
 }
 

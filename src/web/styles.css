@@ -1,6 +1,25 @@
 :root {
   color-scheme: light dark;
   font-family: Inter, system-ui, sans-serif;
+  --ow-bg-dark: #0b0e14;
+  --ow-surface-dark: #161a21;
+  --ow-surface-high-dark: #1c2028;
+  --ow-surface-highest-dark: #22262f;
+  --ow-text-dark: #ecedf6;
+  --ow-text-muted-dark: #a9abb3;
+  --ow-primary-dark: #b6a0ff;
+  --ow-secondary-dark: #00e3fd;
+  --ow-tertiary-dark: #ff6c95;
+
+  --ow-bg-light: #f5f6f7;
+  --ow-surface-light: #e6e8ea;
+  --ow-surface-high-light: #e0e3e4;
+  --ow-surface-highest-light: #dadddf;
+  --ow-text-light: #2c2f30;
+  --ow-text-muted-light: #595c5d;
+  --ow-primary-light: #652fe7;
+  --ow-secondary-light: #006573;
+  --ow-tertiary-light: #b60051;
 }
 
 html,
@@ -18,7 +37,7 @@ body,
   background: radial-gradient(circle at 15% 20%, rgba(126, 81, 255, 0.15), transparent 30%),
     radial-gradient(circle at 85% 15%, rgba(0, 227, 253, 0.12), transparent 35%),
     #0b0e14;
-  color: #ecedf6;
+  color: var(--ow-text-dark);
   padding-bottom: 110px;
 }
 
@@ -26,7 +45,7 @@ body,
   background: radial-gradient(circle at 15% 20%, rgba(126, 81, 255, 0.1), transparent 28%),
     radial-gradient(circle at 85% 15%, rgba(0, 101, 115, 0.1), transparent 35%),
     #f5f6f7;
-  color: #2c2f30;
+  color: var(--ow-text-light);
 }
 
 .topBar {
@@ -73,11 +92,15 @@ body,
 }
 
 .themeSwitch {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   background: transparent;
   color: inherit;
   border-radius: 999px;
   padding: 8px 14px;
+}
+
+.appRoot.light .themeSwitch {
+  border-color: rgba(0, 0, 0, 0.16);
 }
 
 .mainPanel {
@@ -107,10 +130,14 @@ body,
   transform: translate(-50%, -50%);
   min-width: 150px;
   max-width: 220px;
-  background: rgba(18, 24, 40, 0.9);
+  background: color-mix(in srgb, var(--ow-surface-dark) 86%, transparent);
   border: 1px solid rgba(112, 138, 255, 0.35);
   border-radius: 12px;
   padding: 10px 12px;
+}
+
+.appRoot.light .mote {
+  background: color-mix(in srgb, var(--ow-surface-light) 88%, white 12%);
 }
 
 .mote.pending {
@@ -147,12 +174,12 @@ body,
 .glassCard {
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.09);
-  background: rgba(22, 26, 33, 0.72);
+  background: color-mix(in srgb, var(--ow-surface-dark) 78%, transparent);
   padding: 16px;
 }
 
 .appRoot.light .glassCard {
-  background: rgba(255, 255, 255, 0.84);
+  background: color-mix(in srgb, white 80%, var(--ow-surface-light) 20%);
   border-color: rgba(0, 0, 0, 0.08);
 }
 
@@ -182,9 +209,14 @@ body,
   width: 100%;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(22, 26, 33, 0.65);
+  background: color-mix(in srgb, var(--ow-surface-high-dark) 72%, transparent);
   color: inherit;
   padding: 14px 16px;
+}
+
+.appRoot.light .searchInput {
+  background: color-mix(in srgb, white 72%, var(--ow-surface-highest-light) 28%);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .chipRow {
@@ -212,8 +244,13 @@ body,
   border-radius: 16px;
   padding: 12px;
   text-align: center;
-  background: rgba(22, 26, 33, 0.7);
+  background: color-mix(in srgb, var(--ow-surface-high-dark) 74%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.appRoot.light .creatorCard {
+  background: color-mix(in srgb, white 76%, var(--ow-surface-high-light) 24%);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .creatorAvatar {
@@ -234,9 +271,13 @@ body,
 .chatHeader {
   padding: 12px 14px;
   border-radius: 14px;
-  background: rgba(22, 26, 33, 0.75);
+  background: color-mix(in srgb, var(--ow-surface-high-dark) 76%, transparent);
   display: flex;
   justify-content: space-between;
+}
+
+.appRoot.light .chatHeader {
+  background: color-mix(in srgb, white 78%, var(--ow-surface-high-light) 22%);
 }
 
 .chatStream {
@@ -251,7 +292,7 @@ body,
 }
 
 .bubble.left {
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, white 16%, transparent);
 }
 
 .bubble.right {
@@ -313,7 +354,11 @@ body,
   border-radius: 14px;
   padding: 12px;
   text-align: center;
-  background: rgba(22, 26, 33, 0.65);
+  background: color-mix(in srgb, var(--ow-surface-dark) 76%, transparent);
+}
+
+.appRoot.light .statsRow div {
+  background: color-mix(in srgb, white 72%, var(--ow-surface-light) 28%);
 }
 
 .statsRow strong {
@@ -331,11 +376,16 @@ body,
   left: 14px;
   bottom: 88px;
   width: min(420px, calc(100% - 28px));
-  background: rgba(8, 12, 20, 0.82);
+  background: color-mix(in srgb, var(--ow-bg-dark) 84%, transparent);
   border: 1px solid rgba(123, 151, 255, 0.38);
   border-radius: 12px;
   padding: 12px;
   backdrop-filter: blur(6px);
+}
+
+.appRoot.light .composer {
+  background: color-mix(in srgb, #ffffff 84%, var(--ow-surface-light) 16%);
+  border-color: rgba(101, 47, 231, 0.24);
 }
 
 .headline {
@@ -350,10 +400,16 @@ body,
   resize: vertical;
   border-radius: 8px;
   border: 1px solid rgba(134, 157, 255, 0.4);
-  background: #0d1322;
-  color: #f4f7ff;
+  background: color-mix(in srgb, var(--ow-surface-dark) 88%, black 12%);
+  color: var(--ow-text-dark);
   padding: 8px;
   font: inherit;
+}
+
+.appRoot.light .composer textarea {
+  background: color-mix(in srgb, white 82%, var(--ow-surface-highest-light) 18%);
+  color: var(--ow-text-light);
+  border-color: rgba(101, 47, 231, 0.2);
 }
 
 .composer button {
@@ -424,10 +480,35 @@ body,
   border-color: rgba(0, 0, 0, 0.1);
 }
 
+.appRoot.light .bottomNav button {
+  color: #6f7380;
+}
+
+.appRoot.light .bottomNav button.active {
+  color: #2c2f30;
+  background: linear-gradient(135deg, rgba(101, 47, 231, 0.2), rgba(84, 227, 252, 0.2));
+}
+
 @media (max-width: 980px) {
   .composer {
     position: static;
     width: auto;
     margin: 14px;
+  }
+}
+
+@media (max-width: 720px) {
+  .mainPanel {
+    padding: 10px;
+  }
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+  .bubble {
+    max-width: 86%;
+  }
+  .bottomNav button {
+    font-size: 9px;
+    padding: 9px 4px;
   }
 }
