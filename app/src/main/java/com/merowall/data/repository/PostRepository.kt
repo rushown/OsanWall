@@ -3,7 +3,6 @@ package com.merowall.data.repository
 import androidx.paging.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.snapshots
 import com.merowall.data.model.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await

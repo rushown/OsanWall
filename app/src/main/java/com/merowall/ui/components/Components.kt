@@ -2,8 +2,11 @@ package com.merowall.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,13 +15,12 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 
 // ── Shimmer Effect ──────────────────────────────────────────────────────────
 fun Modifier.shimmerEffect(): Modifier = composed {
@@ -28,7 +30,7 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         MaterialTheme.colorScheme.surfaceContainerHighest
     )
     val transition = rememberInfiniteTransition(label = "shimmer")
-    val translateAnimation = transition.animateFloat(
+    val translateAnimation by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1000f,
         animationSpec = infiniteRepeatable(
@@ -40,8 +42,8 @@ fun Modifier.shimmerEffect(): Modifier = composed {
     background(
         brush = Brush.linearGradient(
             colors = shimmerColors,
-            start = Offset(translateAnimation.value - 500f, 0f),
-            end = Offset(translateAnimation.value, 0f)
+            start = Offset(translateAnimation - 500f, 0f),
+            end = Offset(translateAnimation, 0f)
         )
     )
 }
@@ -59,18 +61,20 @@ fun UserAvatar(
     Box(modifier = modifier.size(size)) {
         val shape = CircleShape
         val borderModifier = if (hasGradientBorder) {
-            Modifier.border(
-                width = 2.dp,
-                brush = Brush.sweepGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.secondary,
-                        MaterialTheme.colorScheme.tertiary,
-                        MaterialTheme.colorScheme.primary
-                    )
-                ),
-                shape = shape
-            ).padding(2.dp)
+            Modifier
+                .border(
+                    width = 2.dp,
+                    brush = Brush.sweepGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary,
+                            MaterialTheme.colorScheme.tertiary,
+                            MaterialTheme.colorScheme.primary
+                        )
+                    ),
+                    shape = shape
+                )
+                .padding(2.dp)
         } else Modifier
 
         AsyncImage(
@@ -152,12 +156,13 @@ fun GradientButton(
     val gradient = Brush.linearGradient(
         listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
     )
+    val disabledGradient = Brush.linearGradient(
+        listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surfaceVariant)
+    )
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50.dp))
-            .background(if (enabled) gradient else Brush.linearGradient(
-                listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surfaceVariant)
-            ))
+            .background(if (enabled) gradient else disabledGradient)
             .clickable(enabled = enabled && !isLoading, onClick = onClick)
             .padding(horizontal = 24.dp, vertical = 14.dp),
         contentAlignment = Alignment.Center
@@ -171,7 +176,8 @@ fun GradientButton(
         } else {
             Text(
                 text = text,
-                color = if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (enabled) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelLarge
             )
         }
@@ -185,11 +191,11 @@ fun MeroWallBottomBar(
     onNavigate: (String) -> Unit
 ) {
     val items = listOf(
-        BottomNavItem("home", androidx.compose.material.icons.Icons.Default.Home, "Feed"),
-        BottomNavItem("discover", androidx.compose.material.icons.Icons.Default.Explore, "Explore"),
-        BottomNavItem("create", androidx.compose.material.icons.Icons.Default.AddCircle, "Create"),
-        BottomNavItem("notifications", androidx.compose.material.icons.Icons.Default.Notifications, "Alerts"),
-        BottomNavItem("profile", androidx.compose.material.icons.Icons.Default.Person, "Profile"),
+        BottomNavItem("home", Icons.Default.Home, "Feed"),
+        BottomNavItem("discover", Icons.Default.Explore, "Explore"),
+        BottomNavItem("create", Icons.Default.AddCircle, "Create"),
+        BottomNavItem("notifications", Icons.Default.Notifications, "Alerts"),
+        BottomNavItem("profile", Icons.Default.Person, "Profile"),
     )
     Surface(
         modifier = Modifier
@@ -209,9 +215,9 @@ fun MeroWallBottomBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
-                val selected = currentRoute == item.route
+                val selected = currentRoute == item.route ||
+                    (item.route == "profile" && currentRoute?.startsWith("profile") == true)
                 if (item.route == "create") {
-                    // FAB-style center button
                     Box(
                         modifier = Modifier
                             .size(52.dp)
@@ -250,7 +256,7 @@ fun MeroWallBottomBar(
                             imageVector = item.icon,
                             contentDescription = item.label,
                             tint = if (selected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                                   else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(24.dp)
                         )
                         if (selected) {
@@ -271,6 +277,6 @@ fun MeroWallBottomBar(
 
 data class BottomNavItem(
     val route: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val label: String
 )

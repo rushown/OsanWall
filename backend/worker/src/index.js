@@ -583,7 +583,7 @@ function jsonResponse(data, status = 200, extraHeaders = {}) {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': (env && env.CORS_ORIGIN) ? env.CORS_ORIGIN : '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'X-Content-Type-Options': 'nosniff',
@@ -598,7 +598,7 @@ function corsPreflightResponse(env) {
   return new Response(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': (env && env.CORS_ORIGIN) ? env.CORS_ORIGIN : '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',

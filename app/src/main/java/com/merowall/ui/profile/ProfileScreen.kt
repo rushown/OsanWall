@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -21,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.merowall.data.model.*
 import com.merowall.ui.components.*
+import com.merowall.ui.components.UserAvatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -204,7 +206,7 @@ fun ProfileStat(label: String, value: Int) {
 }
 
 @Composable
-fun ProfileSection(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, accentColor: Color, content: @Composable () -> Unit) {
+fun ProfileSection(title: String, icon: ImageVector, accentColor: Color, content: @Composable () -> Unit) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Row(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),

@@ -2,6 +2,7 @@ package com.merowall.ui.discover
 
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.grid.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -248,7 +250,7 @@ fun SongSearchItem(song: Song) {
 }
 
 @Composable
-fun CategoryTile(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color) {
+fun CategoryTile(label: String, icon: ImageVector, color: Color) {
     Box(
         modifier = Modifier
             .size(100.dp)

@@ -1,6 +1,5 @@
 {
   "rules": {
-    // ── Messages ────────────────────────────────────────────────────────────
     "messages": {
       "$chatId": {
         ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).exists()",
@@ -10,8 +9,6 @@
         }
       }
     },
-
-    // ── Chats metadata ───────────────────────────────────────────────────────
     "chats": {
       "$chatId": {
         ".read": "auth != null && data.child('participants').child(auth.uid).exists()",
@@ -24,8 +21,6 @@
         "lastMessageSenderId": { ".validate": "newData.isString()" }
       }
     },
-
-    // ── Typing indicators ────────────────────────────────────────────────────
     "typing": {
       "$chatId": {
         ".read": "auth != null",
@@ -35,8 +30,6 @@
         }
       }
     },
-
-    // ── Presence ─────────────────────────────────────────────────────────────
     "presence": {
       "$userId": {
         ".read": "auth != null",
@@ -44,8 +37,6 @@
         ".validate": "newData.hasChildren(['isOnline', 'lastSeen'])"
       }
     },
-
-    // ── Deny all else ────────────────────────────────────────────────────────
     "$other": {
       ".read": false,
       ".write": false

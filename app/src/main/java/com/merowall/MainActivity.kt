@@ -7,8 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.*
@@ -16,9 +21,14 @@ import androidx.navigation.compose.*
 import com.merowall.ui.*
 import com.merowall.ui.chat.*
 import com.merowall.ui.components.MeroWallBottomBar
+import com.merowall.data.model.PostType
 import com.merowall.ui.discover.DiscoverScreen
 import com.merowall.ui.profile.ProfileScreen
 import dagger.hilt.android.AndroidEntryPoint
+import com.merowall.ui.home.HomeScreen
+import com.merowall.ui.home.HomeViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.foundation.layout.Column
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -36,7 +46,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MeroWallApp() {
-    val authViewModel: AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val authViewModel: AuthViewModel = hiltViewModel()
     val authState by authViewModel.uiState.collectAsState()
 
     MeroWallTheme {
@@ -104,7 +114,7 @@ fun MainGraph(onSignOut: () -> Unit) {
             popExitTransition = { fadeOut(tween(200)) + slideOutHorizontally(tween(200)) { it / 10 } }
         ) {
             composable("home") {
-                com.merowall.ui.home.HomeScreen(
+                HomeScreen(
                     onNavigateToProfile = { navController.navigate("profile/$it") },
                     onNavigateToPostDetail = { navController.navigate("post/$it") },
                     onNavigateToCreate = { navController.navigate("create") }
@@ -186,17 +196,17 @@ fun NotificationsScreen() {
 @Composable
 fun CreatePostSheet(onDismiss: () -> Unit) {
     var content by remember { mutableStateOf("") }
-    val viewModel: com.merowall.ui.home.HomeViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val viewModel: HomeViewModel = hiltViewModel()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("New Post", style = MaterialTheme.typography.headlineSmall) },
-                navigationIcon = { IconButton(onClick = onDismiss) { Icon(androidx.compose.material.icons.Icons.Default.Close, null) } },
+                navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, null) } },
                 actions = {
                     TextButton(
                         onClick = {
-                            viewModel.createPost(com.merowall.data.model.PostType.THOUGHT, content)
+                            viewModel.createPost(PostType.THOUGHT, content)
                             onDismiss()
                         },
                         enabled = content.isNotBlank()
@@ -205,7 +215,7 @@ fun CreatePostSheet(onDismiss: () -> Unit) {
             )
         }
     ) { padding ->
-        androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+        Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
             OutlinedTextField(
                 value = content,
                 onValueChange = { content = it },
@@ -224,11 +234,11 @@ fun SettingsScreen(onBack: () -> Unit, onSignOut: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text("Settings") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(androidx.compose.material.icons.Icons.Default.ArrowBack, null) } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null) } }
             )
         }
     ) { padding ->
-        androidx.compose.foundation.layout.Column(
+        Column(
             Modifier.fillMaxSize().padding(padding).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {

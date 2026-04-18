@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,6 +10,14 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
+
+// Load local.properties safely
+val localProperties = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
+}
+fun localProp(key: String, default: String = "") =
+    localProperties.getProperty(key, project.findProperty(key)?.toString() ?: default)
 
 android {
     namespace = "com.merowall"
@@ -21,25 +31,43 @@ android {
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"${project.findProperty("SPOTIFY_CLIENT_ID") ?: ""}\"")
-        buildConfigField("String", "SPOTIFY_CLIENT_SECRET", "\"${project.findProperty("SPOTIFY_CLIENT_SECRET") ?: ""}\"")
-        buildConfigField("String", "TMDB_API_KEY", "\"${project.findProperty("TMDB_API_KEY") ?: ""}\"")
-        buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"${project.findProperty("GOOGLE_BOOKS_API_KEY") ?: ""}\"")
-        buildConfigField("String", "CLOUDFLARE_WORKER_URL", "\"${project.findProperty("CLOUDFLARE_WORKER_URL") ?: "https://your-worker.workers.dev"}\"")
+        buildConfigField("String", "SPOTIFY_CLIENT_ID",     "\"${localProp("SPOTIFY_CLIENT_ID")}\"")
+        buildConfigField("String", "SPOTIFY_CLIENT_SECRET", "\"${localProp("SPOTIFY_CLIENT_SECRET")}\"")
+        buildConfigField("String", "TMDB_API_KEY",          "\"${localProp("TMDB_API_KEY")}\"")
+        buildConfigField("String", "GOOGLE_BOOKS_API_KEY",  "\"${localProp("GOOGLE_BOOKS_API_KEY")}\"")
+        buildConfigField("String", "CLOUDFLARE_WORKER_URL", "\"${localProp("CLOUDFLARE_WORKER_URL", "https://your-worker.workers.dev/")}\"")
+    }
+
+    // Signing config — reads from local.properties
+    val keystorePath = localProp("KEYSTORE_PATH")
+    if (keystorePath.isNotEmpty()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = localProp("KEYSTORE_PASSWORD")
+                keyAlias = localProp("KEY_ALIAS", "merowall")
+                keyPassword = localProp("KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            buildConfigField("Boolean", "IS_DEBUG", "true")
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            buildConfigField("Boolean", "IS_DEBUG", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (signingConfigs.findByName("release") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

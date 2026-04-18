@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">firebaseapp.com</domain>
-        <domain includeSubdomains="true">googleapis.com</domain>
-        <domain includeSubdomains="true">firebase.io</domain>
-        <domain includeSubdomains="true">workers.dev</domain>
-        <domain includeSubdomains="true">api.spotify.com</domain>
-        <domain includeSubdomains="true">api.themoviedb.org</domain>
-        <domain includeSubdomains="true">image.tmdb.org</domain>
-        <domain includeSubdomains="true">accounts.spotify.com</domain>
-        <domain includeSubdomains="true">www.googleapis.com</domain>
-        <pin-set expiration="2026-12-31">
-            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
-        </pin-set>
-    </domain-config>
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system"/>
         </trust-anchors>
     </base-config>
+    <!-- NOTE: Add real certificate pins before production release.
+         Get pins via: openssl s_client -connect api.spotify.com:443 | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
+         Then add per domain:
+         <domain-config>
+           <domain includeSubdomains="true">api.spotify.com</domain>
+           <pin-set><pin digest="SHA-256">REAL_PIN_HERE=</pin></pin-set>
+         </domain-config>
+    -->
 </network-security-config>
