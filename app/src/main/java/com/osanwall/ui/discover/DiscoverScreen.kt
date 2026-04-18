@@ -49,11 +49,18 @@ fun DiscoverScreen(
         ) {
             // Search bar
             item {
-                SearchBar(
-                    query = uiState.query,
-                    onQueryChange = viewModel::onQueryChange,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-                )
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Discover Ethereal Moments",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    SearchBar(
+                        query = uiState.query,
+                        onQueryChange = viewModel::onQueryChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             if (uiState.query.length >= 2) {
@@ -104,7 +111,7 @@ fun DiscoverScreen(
                     item { SectionHeader("Trending Cinema") }
                     item {
                         LazyVerticalGrid(
-                            columns = GridCells.Fixed(3),
+                            columns = GridCells.Adaptive(minSize = 110.dp),
                             modifier = Modifier.fillMaxWidth().height(500.dp).padding(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
