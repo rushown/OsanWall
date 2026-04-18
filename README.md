@@ -296,11 +296,11 @@ KEY_PASSWORD=your_key_password
 ## Project Structure
 
 ```
-MeroWall/
+OsanWall/
 ├── app/
-│   ├── src/main/java/com/merowall/
+│   ├── src/main/java/com/osanwall/
 │   │   ├── MainActivity.kt              # Nav host, app entry
-│   │   ├── MeroWallApplication.kt       # Hilt app, Firebase init
+│   │   ├── OsanWallApplication.kt       # Hilt app, Firebase init
 │   │   ├── data/
 │   │   │   ├── api/
 │   │   │   │   └── ApiServices.kt       # Retrofit interfaces (Spotify, TMDB, Books)
@@ -314,7 +314,7 @@ MeroWall/
 │   │   │       ├── UserRepository.kt    # Profiles + follow
 │   │   │       ├── MediaRepository.kt   # Spotify/TMDB/Books
 │   │   │       ├── Daos.kt              # Room DAOs
-│   │   │       └── MeroWallDatabase.kt  # Room database
+│   │   │       └── OsanWallDatabase.kt  # Room database
 │   │   ├── di/
 │   │   │   ├── AppModule.kt             # Network + DB DI
 │   │   │   └── FirebaseModule.kt        # Firebase DI
@@ -336,7 +336,7 @@ MeroWall/
 │   │   │   └── components/
 │   │   │       └── Components.kt        # Shared composables
 │   │   └── utils/
-│   │       ├── MeroWallMessagingService.kt  # FCM handler
+│   │       ├── OsanWallMessagingService.kt  # FCM handler
 │   │       └── SyncWorker.kt               # WorkManager cache sync
 │   └── src/main/res/
 │       ├── drawable/                    # Vector icons

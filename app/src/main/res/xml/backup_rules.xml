@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <exclude domain="sharedpref" path="com.merowall_preferences.xml"/>
-    <exclude domain="database" path="merowall.db"/>
+    <exclude domain="sharedpref" path="com.osanwall_preferences.xml"/>
+    <exclude domain="database" path="osanwall.db"/>
 </full-backup-content>

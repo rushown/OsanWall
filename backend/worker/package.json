@@ -1,7 +1,7 @@
 {
-  "name": "merowall-api",
+  "name": "osanwall-api",
   "version": "1.0.0",
-  "description": "MeroWall Cloudflare Worker API Gateway",
+  "description": "OsanWall Cloudflare Worker API Gateway",
   "main": "src/index.js",
   "scripts": {
     "dev": "wrangler dev",

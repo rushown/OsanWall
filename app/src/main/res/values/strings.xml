@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MeroWall</string>
+    <string name="app_name">OsanWall</string>
     <string name="notification_channel_general">General</string>
     <string name="notification_channel_chat">Messages</string>
     <string name="notification_channel_social">Social</string>
