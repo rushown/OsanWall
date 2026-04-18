@@ -24,6 +24,7 @@ import coil.compose.AsyncImage
 import com.osanwall.data.model.*
 import com.osanwall.ui.components.GlassCard
 import com.osanwall.ui.components.UserAvatar
+import com.osanwall.ui.components.shimmerEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,8 +37,8 @@ fun DiscoverScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Discover", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface.copy(0.9f))
+                title = { Text("Explore", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface.copy(0.35f))
             )
         },
         containerColor = MaterialTheme.colorScheme.surface
@@ -53,7 +54,8 @@ fun DiscoverScreen(
                     Text(
                         "Discover Ethereal Moments",
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.ExtraBold
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     SearchBar(
                         query = uiState.query,
@@ -108,7 +110,7 @@ fun DiscoverScreen(
 
                 // Trending Movies Grid
                 if (uiState.trendingMovies.isNotEmpty()) {
-                    item { SectionHeader("Trending Cinema") }
+                    item { SectionHeader("Trending Now") }
                     item {
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(minSize = 110.dp),
@@ -118,13 +120,50 @@ fun DiscoverScreen(
                             userScrollEnabled = false
                         ) {
                             items(uiState.trendingMovies) { movie ->
-                                AsyncImage(
-                                    model = movie.posterUrl,
-                                    contentDescription = movie.title,
-                                    contentScale = ContentScale.Crop,
+                                Box(modifier = Modifier.aspectRatio(0.67f).clip(RoundedCornerShape(12.dp))) {
+                                    AsyncImage(
+                                        model = movie.posterUrl,
+                                        contentDescription = movie.title,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .fillMaxWidth()
+                                            .background(
+                                                Brush.verticalGradient(
+                                                    listOf(Color.Transparent, Color.Black.copy(0.55f))
+                                                )
+                                            )
+                                            .padding(8.dp)
+                                    ) {
+                                        Text(
+                                            movie.title,
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    item { SectionHeader("Trending Now") }
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            repeat(3) {
+                                Box(
                                     modifier = Modifier
+                                        .weight(1f)
                                         .aspectRatio(0.67f)
                                         .clip(RoundedCornerShape(12.dp))
+                                        .shimmerEffect()
                                 )
                             }
                         }

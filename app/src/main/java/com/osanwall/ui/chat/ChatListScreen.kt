@@ -31,7 +31,7 @@ fun ChatListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Messages",
+                        "Chat",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -46,7 +46,7 @@ fun ChatListScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.35f)
                 )
             )
         },
@@ -167,6 +167,6 @@ fun ChatListItem(chat: Chat, myId: String, onClick: () -> Unit) {
         modifier = Modifier
             .clickable(onClick = onClick)
             .background(MaterialTheme.colorScheme.surface),
-        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.5f))
     )
 }

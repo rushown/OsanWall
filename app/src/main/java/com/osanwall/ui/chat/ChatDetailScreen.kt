@@ -71,7 +71,7 @@ fun ChatDetailScreen(
                     IconButton(onClick = {}) { Icon(Icons.Default.Videocam, null) }
                     IconButton(onClick = {}) { Icon(Icons.Default.MoreVert, null) }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface.copy(0.9f))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface.copy(0.35f))
             )
         },
         bottomBar = {
@@ -117,9 +117,9 @@ fun MessageBubble(message: Message, isMine: Boolean) {
         horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
     ) {
         val bubbleColor = if (isMine)
-            Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary.copy(0.3f), MaterialTheme.colorScheme.primaryContainer.copy(0.4f)))
+            Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary.copy(0.35f), MaterialTheme.colorScheme.primaryContainer.copy(0.45f)))
         else
-            Brush.linearGradient(listOf(MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.surfaceContainerHigh))
+            Brush.linearGradient(listOf(MaterialTheme.colorScheme.surfaceContainerHigh.copy(0.8f), MaterialTheme.colorScheme.surfaceContainerHigh.copy(0.8f)))
 
         val shape = if (isMine) RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp)
         else RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp)
@@ -199,7 +199,7 @@ fun TypingIndicator() {
 fun ChatInputBar(text: String, onTextChange: (String) -> Unit, onSend: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface.copy(0.95f),
+        color = MaterialTheme.colorScheme.surface.copy(0.65f),
         tonalElevation = 8.dp
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {

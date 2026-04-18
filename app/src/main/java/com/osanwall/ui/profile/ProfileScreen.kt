@@ -58,14 +58,20 @@ fun ProfileScreen(
                 if (!uiState.isMe) {
                     IconButton(
                         onClick = onBack,
-                        modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.35f), CircleShape)
                     ) {
                         Icon(Icons.Default.ArrowBack, null, tint = Color.White)
                     }
                 } else {
                     IconButton(
                         onClick = onSettings,
-                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.35f), CircleShape)
                     ) {
                         Icon(Icons.Default.Settings, null, tint = Color.White)
                     }
@@ -202,7 +208,13 @@ fun ProfileScreen(
 
 @Composable
 fun ProfileStat(label: String, value: Int, modifier: Modifier = Modifier) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.6f))
+            .padding(vertical = 10.dp)
+    ) {
         Text("$value", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
