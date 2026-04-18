@@ -10,7 +10,7 @@ fun Navigation() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) {
-            // HomeScreen placeholder
+            com.osanwall.ui.home.HomeScreen()
         }
     }
 }
