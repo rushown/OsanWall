@@ -1,4 +1,4 @@
-package com.merowall.data.model
+package com.osanwall.data.model
 
 import androidx.room.Entity
 import androidx.room.Index

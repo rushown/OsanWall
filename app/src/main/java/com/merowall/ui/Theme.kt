@@ -1,4 +1,4 @@
-package com.merowall.ui
+package com.osanwall.ui
 
 import android.app.Activity
 import android.os.Build

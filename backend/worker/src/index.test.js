@@ -13,10 +13,10 @@ const mockEnv = {
   FIREBASE_ADMIN_KEY: '',
 };
 
-describe('MeroWall Worker', () => {
+describe('OsanWall Worker', () => {
   it('health endpoint returns 200', async () => {
     const { default: worker } = await import('./src/index.js');
-    const request = new Request('https://merowall-api.workers.dev/health');
+    const request = new Request('https://osanwall-api.workers.dev/health');
     const response = await worker.fetch(request, mockEnv, {});
     expect(response.status).toBe(200);
     const body = await response.json();
@@ -25,14 +25,14 @@ describe('MeroWall Worker', () => {
 
   it('unknown route returns 404', async () => {
     const { default: worker } = await import('./src/index.js');
-    const request = new Request('https://merowall-api.workers.dev/api/unknown');
+    const request = new Request('https://osanwall-api.workers.dev/api/unknown');
     const response = await worker.fetch(request, mockEnv, {});
     expect(response.status).toBe(404);
   });
 
   it('search rejects short queries', async () => {
     const { default: worker } = await import('./src/index.js');
-    const request = new Request('https://merowall-api.workers.dev/api/search', {
+    const request = new Request('https://osanwall-api.workers.dev/api/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: 'a' }),
@@ -43,7 +43,7 @@ describe('MeroWall Worker', () => {
 
   it('search rejects missing content-type', async () => {
     const { default: worker } = await import('./src/index.js');
-    const request = new Request('https://merowall-api.workers.dev/api/search', {
+    const request = new Request('https://osanwall-api.workers.dev/api/search', {
       method: 'POST',
       body: JSON.stringify({ query: 'test' }),
     });
@@ -53,7 +53,7 @@ describe('MeroWall Worker', () => {
 
   it('OPTIONS returns CORS headers', async () => {
     const { default: worker } = await import('./src/index.js');
-    const request = new Request('https://merowall-api.workers.dev/api/trending', {
+    const request = new Request('https://osanwall-api.workers.dev/api/trending', {
       method: 'OPTIONS',
     });
     const response = await worker.fetch(request, mockEnv, {});

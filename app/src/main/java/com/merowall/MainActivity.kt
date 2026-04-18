@@ -1,4 +1,4 @@
-package com.merowall
+package com.osanwall
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,9 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.*
 import androidx.navigation.compose.*
-import com.merowall.ui.*
-import com.merowall.ui.chat.*
-import com.merowall.ui.components.MeroWallBottomBar
+import com.osanwall.ui.*
+import com.osanwall.ui.chat.*
+import com.osanwall.ui.components.OsanWallBottomBar
 import com.merowall.data.model.PostType
 import com.merowall.ui.discover.DiscoverScreen
 import com.merowall.ui.profile.ProfileScreen

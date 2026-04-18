@@ -1,4 +1,4 @@
-# MeroWall 🌌
+# OsanWall 🌌
 
 A social platform for sharing your cultural identity — songs, movies, books, and thoughts.
 Built with Kotlin + Jetpack Compose (Android) and Cloudflare Workers + Firebase (backend).
@@ -15,7 +15,7 @@ Built with Kotlin + Jetpack Compose (Android) and Cloudflare Workers + Firebase 
                     │ HTTPS
           ┌─────────▼──────────┐
           │  Cloudflare Worker  │  ← Rate limiting, caching, API gateway
-          │   (merowall-api)    │
+          │   (osanwall-api)    │
           └──┬──────┬──────┬───┘
              │      │      │
     ┌────────▼─┐ ┌──▼───┐ ┌▼──────────┐
@@ -52,7 +52,7 @@ Built with Kotlin + Jetpack Compose (Android) and Cloudflare Workers + Firebase 
 ### 1.1 Create Firebase Project
 
 1. Go to [https://console.firebase.google.com](https://console.firebase.google.com)
-2. Click **Add project** → name it `MeroWall`
+2. Click **Add project** → name it `OsanWall`
 3. Enable Google Analytics (optional but recommended)
 
 ### 1.2 Enable Services
@@ -71,8 +71,8 @@ In the Firebase Console, enable each of these:
 ### 1.3 Add Android App
 
 1. Project Settings → Add app → Android
-2. Package name: `com.merowall`
-3. App nickname: `MeroWall`
+2. Package name: `com.osanwall`
+3. App nickname: `OsanWall`
 4. Download **`google-services.json`**
 5. Replace `app/google-services.json` with your downloaded file
 
@@ -114,7 +114,7 @@ They are deployed automatically with `firebase deploy --only firestore:indexes`.
 ### 2.1 Spotify
 
 1. Go to [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
-2. Create app → set Redirect URI to `https://merowall.app/callback`
+2. Create app → set Redirect URI to `https://osanwall.app/callback`
 3. Copy **Client ID** and **Client Secret**
 
 ### 2.2 TMDB (The Movie Database)
@@ -199,7 +199,7 @@ curl "http://localhost:8787/api/songs/search?q=radiohead"
 
 # Deploy to production
 npm run deploy
-# → Deployed to https://merowall-api.YOUR-SUBDOMAIN.workers.dev
+# → Deployed to https://osanwall-api.YOUR-SUBDOMAIN.workers.dev
 ```
 
 ### 3.5 Worker API Endpoints
@@ -220,7 +220,7 @@ npm run deploy
 ### 3.6 Custom Domain (Optional)
 
 In Cloudflare Dashboard → Workers & Pages → your worker → Triggers → Custom Domains:
-Add `api.merowall.app` (requires your domain on Cloudflare).
+Add `api.osanwall.app` (requires your domain on Cloudflare).
 
 ---
 
@@ -241,7 +241,7 @@ SPOTIFY_CLIENT_ID=your_spotify_client_id
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 TMDB_API_KEY=your_tmdb_bearer_token
 GOOGLE_BOOKS_API_KEY=your_google_books_key
-CLOUDFLARE_WORKER_URL=https://merowall-api.your-subdomain.workers.dev/
+CLOUDFLARE_WORKER_URL=https://osanwall-api.your-subdomain.workers.dev/
 ```
 
 > ⚠️ **Never commit `local.properties`** — it's in `.gitignore`.
@@ -250,7 +250,7 @@ CLOUDFLARE_WORKER_URL=https://merowall-api.your-subdomain.workers.dev/
 
 ```bash
 # Open project in Android Studio
-# File → Open → select MeroWall folder
+# File → Open → select OsanWall folder
 
 # Or build from CLI:
 ./gradlew assembleDebug
@@ -269,14 +269,14 @@ CLOUDFLARE_WORKER_URL=https://merowall-api.your-subdomain.workers.dev/
 
 Create `keystore.jks`:
 ```bash
-keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias merowall
+keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias osanwall
 ```
 
 Add to `local.properties`:
 ```properties
 KEYSTORE_PATH=../keystore.jks
 KEYSTORE_PASSWORD=your_keystore_password
-KEY_ALIAS=merowall
+KEY_ALIAS=osanwall
 KEY_PASSWORD=your_key_password
 ```
 

@@ -1,4 +1,4 @@
-package com.merowall.utils
+package com.osanwall.utils
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker

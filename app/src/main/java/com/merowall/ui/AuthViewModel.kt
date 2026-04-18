@@ -1,4 +1,4 @@
-package com.merowall.ui
+package com.osanwall.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

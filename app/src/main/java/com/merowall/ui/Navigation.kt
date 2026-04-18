@@ -1,4 +1,4 @@
-package com.merowall.ui
+package com.osanwall.ui
 
 sealed class Screen(val route: String) {
     // Auth

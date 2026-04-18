@@ -20,11 +20,11 @@ fun localProp(key: String, default: String = "") =
     localProperties.getProperty(key, project.findProperty(key)?.toString() ?: default)
 
 android {
-    namespace = "com.merowall"
+    namespace = "com.osanwall"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.merowall"
+        applicationId = "com.osanwall"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -45,7 +45,7 @@ android {
             create("release") {
                 storeFile = file(keystorePath)
                 storePassword = localProp("KEYSTORE_PASSWORD")
-                keyAlias = localProp("KEY_ALIAS", "merowall")
+                keyAlias = localProp("KEY_ALIAS", "osanwall")
                 keyPassword = localProp("KEY_PASSWORD")
             }
         }

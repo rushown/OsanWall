@@ -1,4 +1,4 @@
--keep class com.merowall.data.model.** { *; }
+-keep class com.osanwall.data.model.** { *; }
 -keepattributes Signature
 -keepattributes *Annotation*
 -keepclassmembers class * {
@@ -11,11 +11,11 @@
 -keepclassmembers class ** {
     @kotlinx.serialization.Serializable *;
 }
--keep,includedescriptorclasses class com.merowall.**$$serializer { *; }
--keepclassmembers class com.merowall.** {
+-keep,includedescriptorclasses class com.osanwall.**$$serializer { *; }
+-keepclassmembers class com.osanwall.** {
     *** Companion;
 }
--keepclasseswithmembers class com.merowall.** {
+-keepclasseswithmembers class com.osanwall.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 -keep class androidx.room.** { *; }

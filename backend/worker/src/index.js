@@ -1,5 +1,5 @@
 /**
- * MeroWall API Gateway — Cloudflare Worker
+ * OsanWall API Gateway — Cloudflare Worker
  * Handles: rate limiting, CORS, Spotify token caching,
  * TMDB/Books proxying, trending aggregation, push notifications.
  */
@@ -462,7 +462,7 @@ async function handleNotify(request, env) {
             data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
             android: {
               priority: 'HIGH',
-              notification: { channel_id: data.type === 'chat' ? 'merowall_chat' : 'merowall_social' },
+              notification: { channel_id: data.type === 'chat' ? 'osanwall_chat' : 'osanwall_social' },
             },
           },
         }),

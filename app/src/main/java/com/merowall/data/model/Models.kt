@@ -1,4 +1,4 @@
-package com.merowall.data.model
+package com.osanwall.data.model
 
 import com.google.firebase.Timestamp
 import kotlinx.serialization.Serializable

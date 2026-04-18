@@ -1,4 +1,4 @@
-package com.merowall.utils
+package com.osanwall.utils
 
 import android.app.NotificationManager
 import android.app.PendingIntent

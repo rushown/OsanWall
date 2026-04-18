@@ -1,4 +1,4 @@
-package com.merowall.ui
+package com.osanwall.ui
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*

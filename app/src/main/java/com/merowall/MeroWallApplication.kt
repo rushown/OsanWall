@@ -1,4 +1,4 @@
-package com.merowall
+package com.osanwall
 
 import android.app.Application
 import android.app.NotificationChannel

@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MeroWall"
+rootProject.name = "OsanWall"
 include(":app")

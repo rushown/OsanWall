@@ -1,8 +1,8 @@
-package com.merowall.ui.home
+package com.osanwall.ui.home
 
 import app.cash.turbine.test
-import com.merowall.data.model.*
-import com.merowall.data.repository.*
+import com.osanwall.data.model.*
+import com.osanwall.data.repository.*
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

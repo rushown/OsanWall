@@ -1,8 +1,8 @@
-package com.merowall.data.api
+package com.osanwall.data.api
 
-import com.merowall.data.model.Movie
-import com.merowall.data.model.Song
-import com.merowall.data.model.Book
+import com.osanwall.data.model.Movie
+import com.osanwall.data.model.Song
+import com.osanwall.data.model.Book
 import kotlinx.serialization.Serializable
 import retrofit2.http.*
 

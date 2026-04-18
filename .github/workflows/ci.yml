@@ -1,4 +1,4 @@
-name: MeroWall CI/CD
+name: OsanWall CI/CD
 
 on:
   push:

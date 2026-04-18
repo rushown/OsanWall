@@ -1,4 +1,4 @@
-package com.merowall.di
+package com.osanwall.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase

@@ -1,4 +1,4 @@
-package com.merowall.ui
+package com.osanwall.ui
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

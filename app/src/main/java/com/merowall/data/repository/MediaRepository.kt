@@ -1,7 +1,7 @@
-package com.merowall.data.repository
+package com.osanwall.data.repository
 
-import com.merowall.data.api.*
-import com.merowall.data.model.*
+import com.osanwall.data.api.*
+import com.osanwall.data.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
