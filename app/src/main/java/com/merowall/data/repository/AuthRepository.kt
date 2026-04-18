@@ -1,5 +1,6 @@
 package com.merowall.data.repository
 
+import android.util.Patterns
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -23,31 +24,48 @@ class AuthRepository @Inject constructor(
 
     fun signInWithEmail(email: String, password: String): Flow<Result<User>> = flow {
         emit(Result.Loading)
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emit(Result.Error("Invalid email address"))
+            return@flow
+        }
+        if (password.length < 6) {
+            emit(Result.Error("Password must be at least 6 characters"))
+            return@flow
+        }
         try {
-            val result = auth.signInWithEmailAndPassword(email, password).await()
+            val result = auth.signInWithEmailAndPassword(email.trim(), password).await()
             val user = fetchUser(result.user!!.uid)
             emit(Result.Success(user))
         } catch (e: Exception) {
             Timber.e(e, "Email sign in failed")
-            emit(Result.Error(e.message ?: "Sign in failed", e))
+            emit(Result.Error(mapAuthError(e.message), e))
         }
     }
 
     fun signUpWithEmail(email: String, password: String, username: String): Flow<Result<User>> = flow {
         emit(Result.Loading)
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emit(Result.Error("Invalid email address"))
+            return@flow
+        }
+        if (password.length < 6) {
+            emit(Result.Error("Password must be at least 6 characters"))
+            return@flow
+        }
+        val cleanUsername = username.trim().lowercase().replace(Regex("[^a-z0-9_.]"), "")
+        if (cleanUsername.length < 3) {
+            emit(Result.Error("Username must be at least 3 characters (letters, numbers, _ or .)"))
+            return@flow
+        }
         try {
-            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            val result = auth.createUserWithEmailAndPassword(email.trim(), password).await()
             val uid = result.user!!.uid
-            val user = User(
-                id = uid,
-                email = email,
-                username = username
-            )
-            firestore.collection("users").document(uid).set(user).await()
+            val user = User(id = uid, email = email.trim(), username = cleanUsername)
+            firestore.collection(Collections.USERS).document(uid).set(user).await()
             emit(Result.Success(user))
         } catch (e: Exception) {
             Timber.e(e, "Email sign up failed")
-            emit(Result.Error(e.message ?: "Sign up failed", e))
+            emit(Result.Error(mapAuthError(e.message), e))
         }
     }
 
@@ -62,10 +80,14 @@ class AuthRepository @Inject constructor(
                 val newUser = User(
                     id = uid,
                     email = account.email ?: "",
-                    username = account.displayName?.replace(" ", "").lowercase() ?: "user$uid",
+                    username = account.displayName
+                        ?.lowercase()
+                        ?.replace(Regex("[^a-z0-9_.]"), "")
+                        ?.take(20)
+                        ?: "user${uid.take(6)}",
                     avatarUrl = account.photoUrl?.toString() ?: ""
                 )
-                firestore.collection("users").document(uid).set(newUser).await()
+                firestore.collection(Collections.USERS).document(uid).set(newUser).await()
                 newUser
             } else {
                 fetchUser(uid)
@@ -73,26 +95,43 @@ class AuthRepository @Inject constructor(
             emit(Result.Success(user))
         } catch (e: Exception) {
             Timber.e(e, "Google sign in failed")
-            emit(Result.Error(e.message ?: "Google sign in failed", e))
+            emit(Result.Error(mapAuthError(e.message), e))
         }
     }
 
-    fun signOut() {
-        auth.signOut()
-    }
+    fun signOut() = auth.signOut()
 
     suspend fun fetchUser(userId: String): User {
-        val doc = firestore.collection("users").document(userId).get().await()
-        return doc.toObject(User::class.java) ?: User(id = userId)
+        return try {
+            val doc = firestore.collection(Collections.USERS).document(userId).get().await()
+            doc.toObject(User::class.java) ?: User(id = userId)
+        } catch (e: Exception) {
+            Timber.e(e, "fetchUser failed for $userId")
+            User(id = userId)
+        }
     }
 
     fun sendPasswordReset(email: String): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emit(Result.Error("Invalid email address"))
+            return@flow
+        }
         try {
-            auth.sendPasswordResetEmail(email).await()
+            auth.sendPasswordResetEmail(email.trim()).await()
             emit(Result.Success(Unit))
         } catch (e: Exception) {
-            emit(Result.Error(e.message ?: "Failed to send reset email", e))
+            emit(Result.Error(mapAuthError(e.message), e))
         }
+    }
+
+    private fun mapAuthError(message: String?): String = when {
+        message == null -> "Authentication failed"
+        "password" in message.lowercase() -> "Incorrect password"
+        "user" in message.lowercase() && "found" in message.lowercase() -> "No account found with this email"
+        "email" in message.lowercase() && "use" in message.lowercase() -> "Email already in use"
+        "network" in message.lowercase() -> "Network error - check your connection"
+        "too-many-requests" in message.lowercase() -> "Too many attempts - try again later"
+        else -> message
     }
 }

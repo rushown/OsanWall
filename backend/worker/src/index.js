@@ -35,6 +35,12 @@ async function handleRequest(request, env, ctx) {
   const url = new URL(request.url);
   const { pathname } = url;
 
+  // ── Request size guard ──────────────────────────────────────────────────────
+  const contentLength = parseInt(request.headers.get('Content-Length') || '0');
+  if (contentLength > 64 * 1024) { // 64KB max body
+    return jsonResponse({ error: 'Request body too large' }, 413);
+  }
+
   // ── CORS preflight ──────────────────────────────────────────────────────────
   if (request.method === 'OPTIONS') {
     return corsPreflightResponse(env);
@@ -423,6 +429,15 @@ async function handleNotify(request, env) {
     return jsonResponse({ error: 'token and title are required' }, 400);
   }
 
+  // Validate FCM token format (should be 140-200 chars, alphanumeric + : - _)
+  if (typeof token !== 'string' || token.length < 100 || token.length > 512 || !/^[a-zA-Z0-9:_-]+$/.test(token)) {
+    return jsonResponse({ error: 'Invalid FCM token format' }, 400);
+  }
+
+  // Sanitize notification content
+  const safeTitle = String(title).slice(0, 100);
+  const safeBody = msgBody ? String(msgBody).slice(0, 500) : '';
+
   // Get Firebase service account key from env (base64 encoded)
   if (!env.FIREBASE_ADMIN_KEY) {
     return jsonResponse({ error: 'Push notifications not configured' }, 503);
@@ -443,7 +458,7 @@ async function handleNotify(request, env) {
         body: JSON.stringify({
           message: {
             token,
-            notification: { title, body: msgBody },
+            notification: { title: safeTitle, body: safeBody },
             data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
             android: {
               priority: 'HIGH',

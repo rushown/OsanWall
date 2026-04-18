@@ -1,5 +1,6 @@
 package com.merowall.data.repository
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.merowall.data.model.*
@@ -15,101 +16,155 @@ class UserRepository @Inject constructor(
     private val storage: FirebaseStorage,
     private val userDao: UserDao
 ) {
+    private val users get() = firestore.collection(Collections.USERS)
+    private val follows get() = firestore.collection(Collections.FOLLOWS)
+
     fun getUserFlow(userId: String): Flow<User> = flow {
         try {
-            val doc = firestore.collection("users").document(userId).get().await()
-            val user = doc.toObject(User::class.java) ?: User(id = userId)
-            emit(user)
+            val doc = users.document(userId).get().await()
+            emit(doc.toObject(User::class.java) ?: User(id = userId))
         } catch (e: Exception) {
-            Timber.e(e)
+            Timber.e(e, "getUserFlow failed for $userId")
             emit(User(id = userId))
         }
     }
 
     suspend fun updateProfile(userId: String, updates: Map<String, Any>) {
-        firestore.collection("users").document(userId).update(updates).await()
+        try {
+            users.document(userId).update(updates).await()
+        } catch (e: Exception) {
+            Timber.e(e, "updateProfile failed")
+            throw e
+        }
     }
 
     suspend fun updateTopSongs(userId: String, songs: List<Song>) {
-        firestore.collection("users").document(userId)
-            .update("topSongs", songs).await()
+        try {
+            users.document(userId).update(Fields.TOP_SONGS, songs).await()
+        } catch (e: Exception) {
+            Timber.e(e, "updateTopSongs failed")
+            throw e
+        }
     }
 
     suspend fun updateTopMovies(userId: String, movies: List<Movie>) {
-        firestore.collection("users").document(userId)
-            .update("topMovies", movies).await()
+        try {
+            users.document(userId).update(Fields.TOP_MOVIES, movies).await()
+        } catch (e: Exception) {
+            Timber.e(e, "updateTopMovies failed")
+            throw e
+        }
     }
 
     suspend fun updateTopBooks(userId: String, books: List<Book>) {
-        firestore.collection("users").document(userId)
-            .update("topBooks", books).await()
+        try {
+            users.document(userId).update(Fields.TOP_BOOKS, books).await()
+        } catch (e: Exception) {
+            Timber.e(e, "updateTopBooks failed")
+            throw e
+        }
     }
 
     suspend fun uploadAvatar(userId: String, imageBytes: ByteArray): String {
-        val ref = storage.reference.child("avatars/$userId.webp")
-        ref.putBytes(imageBytes).await()
-        val url = ref.downloadUrl.await().toString()
-        firestore.collection("users").document(userId)
-            .update("avatarUrl", url).await()
-        return url
+        return try {
+            val ref = storage.reference.child("avatars/$userId.webp")
+            ref.putBytes(imageBytes).await()
+            val url = ref.downloadUrl.await().toString()
+            users.document(userId).update(Fields.AVATAR_URL, url).await()
+            url
+        } catch (e: Exception) {
+            Timber.e(e, "uploadAvatar failed")
+            throw e
+        }
     }
 
     suspend fun uploadCover(userId: String, imageBytes: ByteArray): String {
-        val ref = storage.reference.child("covers/$userId.webp")
-        ref.putBytes(imageBytes).await()
-        val url = ref.downloadUrl.await().toString()
-        firestore.collection("users").document(userId)
-            .update("coverUrl", url).await()
-        return url
+        return try {
+            val ref = storage.reference.child("covers/$userId.webp")
+            ref.putBytes(imageBytes).await()
+            val url = ref.downloadUrl.await().toString()
+            users.document(userId).update(Fields.COVER_URL, url).await()
+            url
+        } catch (e: Exception) {
+            Timber.e(e, "uploadCover failed")
+            throw e
+        }
     }
 
     suspend fun followUser(myId: String, targetId: String) {
-        firestore.collection("follows").document("${myId}_${targetId}")
-            .set(mapOf("followerId" to myId, "followingId" to targetId, "timestamp" to System.currentTimeMillis()))
-            .await()
-        firestore.collection("users").document(myId)
-            .update("followingCount", com.google.firebase.firestore.FieldValue.increment(1)).await()
-        firestore.collection("users").document(targetId)
-            .update("followersCount", com.google.firebase.firestore.FieldValue.increment(1)).await()
+        if (myId == targetId) return
+        try {
+            val batch = firestore.batch()
+            val followRef = follows.document("${myId}_${targetId}")
+            batch.set(followRef, mapOf(
+                Fields.FOLLOWER_ID to myId,
+                Fields.FOLLOWING_ID to targetId,
+                Fields.TIMESTAMP to System.currentTimeMillis()
+            ))
+            batch.update(users.document(myId), Fields.FOLLOWING_COUNT, FieldValue.increment(1))
+            batch.update(users.document(targetId), Fields.FOLLOWERS_COUNT, FieldValue.increment(1))
+            batch.commit().await()
+        } catch (e: Exception) {
+            Timber.e(e, "followUser failed")
+            throw e
+        }
     }
 
     suspend fun unfollowUser(myId: String, targetId: String) {
-        firestore.collection("follows").document("${myId}_${targetId}").delete().await()
-        firestore.collection("users").document(myId)
-            .update("followingCount", com.google.firebase.firestore.FieldValue.increment(-1)).await()
-        firestore.collection("users").document(targetId)
-            .update("followersCount", com.google.firebase.firestore.FieldValue.increment(-1)).await()
+        try {
+            val batch = firestore.batch()
+            batch.delete(follows.document("${myId}_${targetId}"))
+            batch.update(users.document(myId), Fields.FOLLOWING_COUNT, FieldValue.increment(-1))
+            batch.update(users.document(targetId), Fields.FOLLOWERS_COUNT, FieldValue.increment(-1))
+            batch.commit().await()
+        } catch (e: Exception) {
+            Timber.e(e, "unfollowUser failed")
+            throw e
+        }
     }
 
     suspend fun isFollowing(myId: String, targetId: String): Boolean {
-        val doc = firestore.collection("follows").document("${myId}_${targetId}").get().await()
-        return doc.exists()
+        return try {
+            follows.document("${myId}_${targetId}").get().await().exists()
+        } catch (e: Exception) {
+            Timber.e(e, "isFollowing check failed")
+            false
+        }
     }
 
     suspend fun searchUsers(query: String): List<User> {
+        val q = query.trim().lowercase()
+        if (q.length < 2) return emptyList()
         return try {
-            firestore.collection("users")
-                .whereGreaterThanOrEqualTo("username", query)
-                .whereLessThanOrEqualTo("username", "$query\uf8ff")
+            users
+                .whereGreaterThanOrEqualTo(Fields.USER_ID, q)
+                .whereLessThanOrEqualTo(Fields.USER_ID, "$q\uf8ff")
                 .limit(20)
                 .get().await()
                 .toObjects(User::class.java)
         } catch (e: Exception) {
-            Timber.e(e)
+            Timber.e(e, "searchUsers failed")
             emptyList()
         }
     }
 
     suspend fun getSuggestedUsers(myId: String): List<User> {
         return try {
-            firestore.collection("users")
-                .whereNotEqualTo("id", myId)
-                .limit(10)
-                .get().await()
+            users.limit(10).get().await()
                 .toObjects(User::class.java)
+                .filter { it.id != myId }
+                .take(8)
         } catch (e: Exception) {
-            Timber.e(e)
+            Timber.e(e, "getSuggestedUsers failed")
             emptyList()
+        }
+    }
+
+    suspend fun updateFcmToken(userId: String, token: String) {
+        try {
+            users.document(userId).update(Fields.FCM_TOKEN, token).await()
+        } catch (e: Exception) {
+            Timber.e(e, "updateFcmToken failed")
         }
     }
 }
