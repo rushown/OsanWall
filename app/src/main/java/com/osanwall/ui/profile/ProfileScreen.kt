@@ -1,4 +1,4 @@
-package com.merowall.ui.profile
+package com.osanwall.ui.profile
 
 
 import androidx.compose.foundation.*
@@ -20,9 +20,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.merowall.data.model.*
-import com.merowall.ui.components.*
-import com.merowall.ui.components.UserAvatar
+import com.osanwall.data.model.*
+import com.osanwall.ui.components.*
+import com.osanwall.ui.components.UserAvatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
