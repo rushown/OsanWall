@@ -298,7 +298,7 @@ async function hkdfMerge(chunks: Uint8Array[], info: string): Promise<Uint8Array
   return new Uint8Array(derived);
 }
 
-function toB64(input: BufferSource): string {
+function toB64(input: BufferSource | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input as ArrayBuffer);
   let binary = "";
   for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
