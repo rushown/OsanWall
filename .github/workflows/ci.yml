@@ -11,6 +11,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  security:
+    name: Security Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install web deps
+        run: npm ci
+      - name: Dependency audit (high/critical)
+        run: npm audit --audit-level=high
+
   # ── Android Build & Test ────────────────────────────────────────────────────
   android:
     name: Android Build & Test
@@ -114,6 +132,7 @@ jobs:
     name: Deploy Cloudflare Worker
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    needs: [security]
     defaults:
       run:
         working-directory: backend/worker
