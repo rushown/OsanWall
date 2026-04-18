@@ -52,11 +52,6 @@ android {
     }
 
     buildTypes {
-        debug {
-            applicationIdSuffix = ".debug"
-            isDebuggable = true
-            buildConfigField("Boolean", "IS_DEBUG", "true")
-        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
