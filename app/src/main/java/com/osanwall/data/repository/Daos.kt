@@ -2,7 +2,10 @@ package com.osanwall.data.repository
 
 import androidx.paging.PagingSource
 import androidx.room.*
-import com.osanwall.data.model.*
+import com.osanwall.data.model.CachedChat
+import com.osanwall.data.model.CachedMessage
+import com.osanwall.data.model.CachedPost
+import com.osanwall.data.model.CachedUser
 import kotlinx.coroutines.flow.Flow
 
 @Dao
