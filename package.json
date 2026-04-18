@@ -1,0 +1,23 @@
+{
+  "name": "osanwall-web-core",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "vitest run",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "dexie": "^4.2.0"
+  },
+  "devDependencies": {
+    "@stablelib/random": "^2.0.1",
+    "@stablelib/utf8": "^2.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "packageManager": "pnpm@10.17.0"
+}
