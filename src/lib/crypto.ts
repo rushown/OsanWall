@@ -127,9 +127,9 @@ export async function unlockIdentityPrivateKey(passphrase?: string): Promise<Cry
   if (!rec) throw new Error("No identity key found");
   const key = await deriveWrappingKey({ mode: rec.wrappingMode, passphrase });
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: fromB64(rec.privateKeyIv) },
+    { name: "AES-GCM", iv: fromB64(rec.privateKeyIv).buffer },
     key,
-    fromB64(rec.encryptedPrivateKey)
+    fromB64(rec.encryptedPrivateKey).buffer
   );
   return crypto.subtle.importKey(
     "pkcs8",
@@ -152,9 +152,9 @@ export async function encryptMoteContent(plaintext: string, symmetricKey: Crypto
 
 export async function decryptMoteContent(ciphertextB64: string, ivB64: string, symmetricKey: CryptoKey): Promise<string> {
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: fromB64(ivB64) },
+    { name: "AES-GCM", iv: fromB64(ivB64).buffer },
     symmetricKey,
-    fromB64(ciphertextB64)
+    fromB64(ciphertextB64).buffer
   );
   return decoder.decode(decrypted);
 }
@@ -206,7 +206,7 @@ async function derivePRFSeed(): Promise<string> {
 function toB64(input: BufferSource): string {
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input as ArrayBuffer);
   let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
+  for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
