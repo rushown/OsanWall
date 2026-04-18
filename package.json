@@ -8,7 +8,7 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "vitest run",
-    "build": "tsc -p tsconfig.json && vite build",
+    "build": "tsc --noEmit && vite build",
     "loadtest": "node scripts/loadtest.mjs",
     "security:audit": "npm audit --audit-level=high"
   },
