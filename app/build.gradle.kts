@@ -1,6 +1,8 @@
 import java.util.Properties
 
 plugins {
+    id("com.android.application")
+    id("com.google.gms.google-services")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -129,14 +131,14 @@ dependencies {
     implementation(libs.coil.gif)
 
     // Firebase
-    implementation(platform(libs.firebase.bom))
+    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.analytics)
+    implementation("com.google.firebase:firebase-analytics")
     implementation(libs.firebase.config)
     implementation(libs.play.services.auth)
 
