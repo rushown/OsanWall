@@ -1,10 +1,10 @@
-package com.merowall.data.repository
+package com.osanwall.data.repository
 
 import androidx.paging.*
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.merowall.data.model.*
+import com.osanwall.data.model.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json

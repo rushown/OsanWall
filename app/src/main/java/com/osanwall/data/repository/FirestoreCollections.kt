@@ -1,4 +1,4 @@
-package com.merowall.data.repository
+package com.osanwall.data.repository
 
 /** Single source of truth for all Firestore/RTDB collection and field names. */
 object Collections {

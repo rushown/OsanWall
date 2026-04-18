@@ -8,13 +8,13 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.merowall.utils.SyncWorker
+import com.osanwall.utils.SyncWorker
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class MeroWallApplication : Application(), Configuration.Provider {
+class OsanWallApplication : Application(), Configuration.Provider {
 
     @Inject lateinit var workerFactory: HiltWorkerFactory
 
@@ -50,11 +50,11 @@ class MeroWallApplication : Application(), Configuration.Provider {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(NotificationManager::class.java)
             listOf(
-                NotificationChannel("merowall_default", "General", NotificationManager.IMPORTANCE_DEFAULT)
+                NotificationChannel("osanwall_default", "General", NotificationManager.IMPORTANCE_DEFAULT)
                     .apply { description = "General notifications" },
-                NotificationChannel("merowall_chat", "Messages", NotificationManager.IMPORTANCE_HIGH)
+                NotificationChannel("osanwall_chat", "Messages", NotificationManager.IMPORTANCE_HIGH)
                     .apply { description = "Chat messages"; enableVibration(true) },
-                NotificationChannel("merowall_social", "Social", NotificationManager.IMPORTANCE_DEFAULT)
+                NotificationChannel("osanwall_social", "Social", NotificationManager.IMPORTANCE_DEFAULT)
                     .apply { description = "Likes, comments, follows" }
             ).forEach { manager.createNotificationChannel(it) }
         }

@@ -1,11 +1,11 @@
-package com.merowall.ui.home
+package com.osanwall.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.merowall.data.model.*
-import com.merowall.data.repository.*
+import com.osanwall.data.model.*
+import com.osanwall.data.repository.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

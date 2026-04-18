@@ -1,12 +1,12 @@
-package com.merowall.data.repository
+package com.osanwall.data.repository
 
 import android.util.Patterns
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.merowall.data.model.Result
-import com.merowall.data.model.User
+import com.osanwall.data.model.Result
+import com.osanwall.data.model.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await

@@ -1,9 +1,9 @@
-package com.merowall.ui.discover
+package com.osanwall.ui.discover
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.merowall.data.model.*
-import com.merowall.data.repository.*
+import com.osanwall.data.model.*
+import com.osanwall.data.repository.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

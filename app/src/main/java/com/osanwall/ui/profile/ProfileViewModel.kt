@@ -1,10 +1,10 @@
-package com.merowall.ui.profile
+package com.osanwall.ui.profile
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.merowall.data.model.*
-import com.merowall.data.repository.*
+import com.osanwall.data.model.*
+import com.osanwall.data.repository.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

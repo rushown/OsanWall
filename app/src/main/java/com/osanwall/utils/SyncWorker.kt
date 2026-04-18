@@ -3,7 +3,7 @@ package com.osanwall.utils
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
-import com.merowall.data.repository.PostRepository
+import com.osanwall.data.repository.PostRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import timber.log.Timber
@@ -28,7 +28,7 @@ class SyncWorker @AssistedInject constructor(
     }
 
     companion object {
-        const val WORK_NAME = "merowall_sync"
+        const val WORK_NAME = "osanwall_sync"
 
         fun schedule(context: Context) {
             val constraints = Constraints.Builder()

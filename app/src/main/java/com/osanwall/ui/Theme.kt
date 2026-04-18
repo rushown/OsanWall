@@ -87,7 +87,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun MeroWallTheme(
+fun OsanWallTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -112,7 +112,7 @@ fun MeroWallTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = MeroWallTypography,
+        typography = OsanWallTypography,
         content = content
     )
 }

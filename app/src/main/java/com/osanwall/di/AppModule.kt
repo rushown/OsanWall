@@ -2,9 +2,9 @@ package com.osanwall.di
 
 import android.content.Context
 import androidx.room.Room
-import com.merowall.BuildConfig
-import com.merowall.data.api.*
-import com.merowall.data.repository.*
+import com.osanwall.BuildConfig
+import com.osanwall.data.api.*
+import com.osanwall.data.repository.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -125,13 +125,13 @@ object NetworkModule {
 object DatabaseModule {
 
     @Provides @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): MeroWallDatabase =
-        Room.databaseBuilder(context, MeroWallDatabase::class.java, "merowall.db")
+    fun provideDatabase(@ApplicationContext context: Context): OsanWallDatabase =
+        Room.databaseBuilder(context, OsanWallDatabase::class.java, "osanwall.db")
             .fallbackToDestructiveMigration()
             .build()
 
-    @Provides fun providePostDao(db: MeroWallDatabase) = db.postDao()
-    @Provides fun provideMessageDao(db: MeroWallDatabase) = db.messageDao()
-    @Provides fun provideUserDao(db: MeroWallDatabase) = db.userDao()
-    @Provides fun provideChatDao(db: MeroWallDatabase) = db.chatDao()
+    @Provides fun providePostDao(db: OsanWallDatabase) = db.postDao()
+    @Provides fun provideMessageDao(db: OsanWallDatabase) = db.messageDao()
+    @Provides fun provideUserDao(db: OsanWallDatabase) = db.userDao()
+    @Provides fun provideChatDao(db: OsanWallDatabase) = db.chatDao()
 }

@@ -1,8 +1,8 @@
-package com.merowall.data.repository
+package com.osanwall.data.repository
 
 import com.google.firebase.database.*
 import com.google.firebase.firestore.FirebaseFirestore
-import com.merowall.data.model.*
+import com.osanwall.data.model.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await

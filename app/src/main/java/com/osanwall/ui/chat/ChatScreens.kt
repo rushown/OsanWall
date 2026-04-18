@@ -1,4 +1,4 @@
-package com.merowall.ui.chat
+package com.osanwall.ui.chat
 // Chat UI split into:
 //   ChatViewModel.kt        - ViewModel
 //   ChatListScreen.kt       - Chat list

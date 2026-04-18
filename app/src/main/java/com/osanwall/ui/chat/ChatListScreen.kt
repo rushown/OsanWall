@@ -1,4 +1,4 @@
-package com.merowall.ui.chat
+package com.osanwall.ui.chat
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -13,8 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.merowall.data.model.Chat
-import com.merowall.ui.components.UserAvatar
+import com.osanwall.data.model.Chat
+import com.osanwall.ui.components.UserAvatar
 import java.text.SimpleDateFormat
 import java.util.*
 

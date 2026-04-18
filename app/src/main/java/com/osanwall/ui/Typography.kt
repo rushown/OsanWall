@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.sp
 val ManropeFontFamily = FontFamily.Default
 val InterFontFamily = FontFamily.Default
 
-val MeroWallTypography = Typography(
+val OsanWallTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = ManropeFontFamily,
         fontWeight = FontWeight.ExtraBold,

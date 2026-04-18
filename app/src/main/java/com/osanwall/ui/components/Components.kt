@@ -1,4 +1,4 @@
-package com.merowall.ui.components
+package com.osanwall.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -186,7 +186,7 @@ fun GradientButton(
 
 // ── BottomNavBar ─────────────────────────────────────────────────────────────
 @Composable
-fun MeroWallBottomBar(
+fun OsanWallBottomBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit
 ) {

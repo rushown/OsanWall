@@ -8,13 +8,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.merowall.MainActivity
-import com.merowall.R
-import com.merowall.data.repository.Collections
-import com.merowall.data.repository.Fields
+import com.osanwall.MainActivity
+import com.osanwall.R
+import com.osanwall.data.repository.Collections
+import com.osanwall.data.repository.Fields
 import timber.log.Timber
 
-class MeroWallMessagingService : FirebaseMessagingService() {
+class OsanWallMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -33,9 +33,9 @@ class MeroWallMessagingService : FirebaseMessagingService() {
         val type = message.data["type"] ?: "general"
 
         val channelId = when (type) {
-            "chat" -> "merowall_chat"
-            "like", "comment", "follow" -> "merowall_social"
-            else -> "merowall_default"
+            "chat" -> "osanwall_chat"
+            "like", "comment", "follow" -> "osanwall_social"
+            else -> "osanwall_default"
         }
 
         val intent = Intent(this, MainActivity::class.java).apply {

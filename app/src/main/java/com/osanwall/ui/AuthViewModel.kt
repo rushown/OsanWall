@@ -2,8 +2,8 @@ package com.osanwall.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.merowall.data.model.Result
-import com.merowall.data.repository.AuthRepository
+import com.osanwall.data.model.Result
+import com.osanwall.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
