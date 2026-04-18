@@ -43,11 +43,36 @@ export type AppSettingsRecord = {
   updatedAt: number;
 };
 
+export type RatchetSessionRecord = {
+  id: string;
+  peerUserId: string;
+  rootKey: string;
+  sendingChainKey: string;
+  receivingChainKey: string;
+  currentDhPublicKey: string;
+  currentDhPrivateKeyEncrypted: string;
+  messageNumberSend: number;
+  messageNumberRecv: number;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type KeyBundleCacheRecord = {
+  userId: string;
+  identityKey: string;
+  signedPreKey: string;
+  signature: string;
+  oneTimePreKey: string;
+  fetchedAt: number;
+};
+
 export class OsanwallDB extends Dexie {
   motes!: Table<MoteRecord, string>;
   syncQueue!: Table<SyncQueueRecord, number>;
   keyMaterial!: Table<KeyMaterialRecord, "identity">;
   appSettings!: Table<AppSettingsRecord, string>;
+  ratchetSessions!: Table<RatchetSessionRecord, string>;
+  keyBundleCache!: Table<KeyBundleCacheRecord, string>;
 
   constructor() {
     super("osanwall");
@@ -67,6 +92,15 @@ export class OsanwallDB extends Dexie {
       await tx.table("motes").toCollection().modify((mote: Partial<MoteRecord>) => {
         if (!mote.clientId) mote.clientId = "legacy";
       });
+    });
+
+    this.version(3).stores({
+      motes: "id, authorId, status, updatedAt, expiresAt, lamport, [x+y], clientId",
+      syncQueue: "++id, opType, entityId, nextRetryAt, retryCount",
+      keyMaterial: "id, updatedAt",
+      appSettings: "key, updatedAt",
+      ratchetSessions: "id, peerUserId, updatedAt",
+      keyBundleCache: "userId, fetchedAt",
     });
   }
 }
