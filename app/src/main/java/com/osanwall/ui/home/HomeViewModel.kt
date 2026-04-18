@@ -75,7 +75,7 @@ class HomeViewModel @Inject constructor(
 
     fun deletePost(postId: String) {
         viewModelScope.launch {
-            postRepository.deletePost(postId)
+            postRepository.deletePost(postId, userId)
         }
     }
 
