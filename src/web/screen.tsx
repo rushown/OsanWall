@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { db, enforceStorageBudget, type MoteRecord } from "../lib/db";
 import { SyncEngine } from "../lib/sync-engine";
 import { fetchViewportMotes, pushQueueItem } from "./api";
+import { loadSettings, saveSettings } from "./settings";
 import { useUiState } from "./state";
 
 const SESSION_USER_ID = "user_demo_01";
@@ -15,6 +16,7 @@ export function OsanwallCanvasApp() {
   const [motes, setMotes] = useState<MoteRecord[]>([]);
   const [draft, setDraft] = useState("");
   const [storageMessage, setStorageMessage] = useState("");
+  const [settings, setSettings] = useState(loadSettings);
   const dragRef = useRef<{ x: number; y: number } | null>(null);
 
   const syncEngine = useMemo(
@@ -31,6 +33,10 @@ export function OsanwallCanvasApp() {
       ),
     [viewport.x, viewport.y]
   );
+
+  useEffect(() => {
+    saveSettings(settings);
+  }, [settings]);
 
   useEffect(() => {
     let mounted = true;
@@ -173,6 +179,14 @@ export function OsanwallCanvasApp() {
           placeholder="Drop a new mote at current viewport..."
         />
         <button onClick={createMote}>Drop Mote</button>
+        <label className="toggleRow">
+          <input
+            type="checkbox"
+            checked={settings.muted}
+            onChange={(e) => setSettings({ ...settings, muted: e.target.checked })}
+          />
+          Mute notifications
+        </label>
         <div className="metaLine">Sync: {isSyncing ? "syncing" : "idle"} · viewport ({viewport.x.toFixed(0)}, {viewport.y.toFixed(0)})</div>
         {storageMessage ? <div className="storageBanner">{storageMessage}</div> : null}
       </div>

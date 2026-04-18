@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow example placeholders"
+paths = [
+  '''local.properties.template''',
+  '''README.md'''
+]

@@ -26,11 +26,19 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile=false
 
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+
       - name: Lint
         run: pnpm lint
 
       - name: Unit + e2e tests
         run: pnpm test:e2e
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high
 
       - name: Worker deploy
         working-directory: backend/worker

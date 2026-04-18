@@ -58,6 +58,7 @@ export default {
 
 async function handleRequest(request, env, ctx) {
   setRuntimeEnv(env);
+  const traceId = request.headers.get('X-Trace-Id') || crypto.randomUUID();
   const url = new URL(request.url);
   const { pathname } = url;
 
@@ -138,7 +139,7 @@ async function handleRequest(request, env, ctx) {
     if (apiPath === 'motes' && request.method === 'POST') {
       const auth = await requireAuth(request, env);
       if (auth.errorResponse) return auth.errorResponse;
-      return handleCreateMote(request, env, auth.userId);
+      return handleCreateMote(request, env, auth.userId, traceId);
     }
     if (apiPath === 'motes' && request.method === 'GET') {
       return handleListMotes(url, env);
@@ -146,10 +147,10 @@ async function handleRequest(request, env, ctx) {
     if (apiPath === 'motes/interact' && request.method === 'POST') {
       const auth = await requireAuth(request, env);
       if (auth.errorResponse) return auth.errorResponse;
-      return handleMoteInteraction(request, env, auth.userId);
+      return handleMoteInteraction(request, env, auth.userId, traceId);
     }
     if (apiPath === 'motes/sweep' && request.method === 'POST') {
-      return handleSweepRequest(request, env);
+      return handleSweepRequest(request, env, traceId);
     }
 
     return jsonResponse({ error: 'Not found', path: pathname }, 404);
@@ -573,7 +574,7 @@ async function getFirebaseAccessToken(serviceAccount) {
 }
 
 // ─── Motes: Free KV Spatial/Decay Engine ──────────────────────────────────────
-async function handleCreateMote(request, env, authenticatedUserId) {
+async function handleCreateMote(request, env, authenticatedUserId, traceId) {
   let body;
   try {
     body = await request.json();
@@ -612,8 +613,9 @@ async function handleCreateMote(request, env, authenticatedUserId) {
 
   await env.CACHE.put(`mote:${id}`, JSON.stringify(mote));
   await addMoteToCell(env.CACHE, cell, id);
+  logEvent('mote.create', { traceId, moteId: id, authorId, x, y, vibe });
 
-  return jsonResponse({ mote });
+  return jsonResponse({ mote, traceId });
 }
 
 async function handleListMotes(url, env) {
@@ -658,7 +660,7 @@ async function handleListMotes(url, env) {
   return jsonResponse({ motes, count: motes.length, bounds: expanded });
 }
 
-async function handleMoteInteraction(request, env, authenticatedUserId) {
+async function handleMoteInteraction(request, env, authenticatedUserId, traceId) {
   let body;
   try {
     body = await request.json();
@@ -686,22 +688,25 @@ async function handleMoteInteraction(request, env, authenticatedUserId) {
   mote.lastInteractionAt = Date.now();
   mote.updatedAt = Date.now();
   await env.CACHE.put(`mote:${mote.id}`, JSON.stringify(mote));
+  logEvent('mote.interact', { traceId, moteId, actorId, interactions: mote.interactions });
 
   return jsonResponse({
     success: true,
     moteId,
     interactions: mote.interactions,
     uniqueInteractions: mote.uniqueInteractions,
+    traceId,
   });
 }
 
-async function handleSweepRequest(request, env) {
+async function handleSweepRequest(request, env, traceId) {
   if (env.SWEEP_TOKEN) {
     const auth = request.headers.get('Authorization') || '';
     if (auth !== `Bearer ${env.SWEEP_TOKEN}`) return jsonResponse({ error: 'Unauthorized' }, 401);
   }
   const report = await runDecaySweep(env);
-  return jsonResponse(report);
+  logEvent('mote.sweep', { traceId, ...report });
+  return jsonResponse({ ...report, traceId });
 }
 
 async function requireAuth(request, env) {
@@ -1064,4 +1069,8 @@ function getRateLimitKey(pathname, ip) {
   if (pathname.includes('/search')) return `search:${ip}`;
   if (pathname.includes('/notify')) return `notify:${ip}`;
   return `default:${ip}`;
+}
+
+function logEvent(event, details) {
+  console.log(JSON.stringify({ level: 'info', event, ts: new Date().toISOString(), ...details }));
 }

@@ -74,7 +74,7 @@ describe('OsanWall Worker', () => {
     const { default: worker } = await import('./index.js');
     const request = new Request('https://osanwall-api.workers.dev/api/search', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'osanwall-web' },
       body: JSON.stringify({ query: 'a' }),
     });
     const response = await worker.fetch(request, mockEnv, {});
@@ -89,6 +89,17 @@ describe('OsanWall Worker', () => {
     });
     const response = await worker.fetch(request, mockEnv, {});
     expect(response.status).toBe(415);
+  });
+
+  it('search rejects missing CSRF guard header', async () => {
+    const { default: worker } = await import('./index.js');
+    const request = new Request('https://osanwall-api.workers.dev/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'hello' }),
+    });
+    const response = await worker.fetch(request, mockEnv, {});
+    expect(response.status).toBe(403);
   });
 
   it('OPTIONS returns CORS headers', async () => {
@@ -106,7 +117,7 @@ describe('OsanWall Worker', () => {
     const token = await makeJwt('user_1');
     const createReq = new Request('https://osanwall-api.workers.dev/api/motes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-Requested-With': 'osanwall-web' },
       body: JSON.stringify({
         authorId: 'user_1',
         text: 'hello osanwall',
@@ -130,7 +141,7 @@ describe('OsanWall Worker', () => {
     const { default: worker } = await import('./index.js');
     const req = new Request('https://osanwall-api.workers.dev/api/motes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'osanwall-web' },
       body: JSON.stringify({ authorId: 'user_1', text: 'x', x: 0, y: 0 }),
     });
     const resp = await worker.fetch(req, mockEnv, {});
@@ -144,6 +155,7 @@ describe('OsanWall Worker', () => {
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer sweep-token',
+        'X-Requested-With': 'osanwall-web',
       },
       body: JSON.stringify({}),
     });
