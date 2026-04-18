@@ -137,10 +137,13 @@ fun ProfileScreen(
                 }
                 Spacer(Modifier.height(16.dp))
                 // Stats
-                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    ProfileStat("Posts", user.postsCount)
-                    ProfileStat("Followers", user.followersCount)
-                    ProfileStat("Following", user.followingCount)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ProfileStat("Posts", user.postsCount, Modifier.weight(1f))
+                    ProfileStat("Followers", user.followersCount, Modifier.weight(1f))
+                    ProfileStat("Following", user.followingCount, Modifier.weight(1f))
                 }
             }
         }
@@ -198,8 +201,8 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileStat(label: String, value: Int) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+fun ProfileStat(label: String, value: Int, modifier: Modifier = Modifier) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         Text("$value", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
