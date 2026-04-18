@@ -101,6 +101,10 @@ async function handleRequest(request, env, ctx) {
       if (!ct.includes('application/json')) {
         return jsonResponse({ error: 'Content-Type must be application/json' }, 415);
       }
+      const requestedWith = request.headers.get('X-Requested-With') || '';
+      if (pathname.startsWith('/api/') && requestedWith !== 'osanwall-web') {
+        return jsonResponse({ error: 'Missing X-Requested-With guard' }, 403);
+      }
     }
 
     // Route dispatcher
@@ -1024,9 +1028,11 @@ function jsonResponse(data, status = 200, extraHeaders = {}) {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': (env && env.CORS_ORIGIN) ? env.CORS_ORIGIN : '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; connect-src 'self';",
       'Cache-Control': status === 200 ? 'public, max-age=60' : 'no-store',
       ...extraHeaders,
     },
@@ -1039,7 +1045,7 @@ function corsPreflightResponse(env) {
     headers: {
       'Access-Control-Allow-Origin': (env && env.CORS_ORIGIN) ? env.CORS_ORIGIN : '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
       'Access-Control-Max-Age': '86400',
     },
   });
