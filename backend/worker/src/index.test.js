@@ -18,7 +18,34 @@ function createMockEnv() {
     GOOGLE_BOOKS_API_KEY: 'test_books_key',
     FIREBASE_ADMIN_KEY: '',
     CORS_ORIGIN: '*',
+    JWT_SECRET: 'test-secret',
+    SWEEP_TOKEN: 'sweep-token',
   };
+}
+
+function makeJwt(sub, secret = 'test-secret') {
+  const header = base64Url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = base64Url(
+    JSON.stringify({
+      sub,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    })
+  );
+  const encoder = new TextEncoder();
+  return crypto.subtle
+    .importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+    .then((key) => crypto.subtle.sign('HMAC', key, encoder.encode(`${header}.${payload}`)))
+    .then((sig) => {
+      const bytes = new Uint8Array(sig);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
+      const signature = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+      return `${header}.${payload}.${signature}`;
+    });
+}
+
+function base64Url(text) {
+  return btoa(text).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
 describe('OsanWall Worker', () => {
@@ -76,9 +103,10 @@ describe('OsanWall Worker', () => {
 
   it('creates and lists motes', async () => {
     const { default: worker } = await import('./index.js');
+    const token = await makeJwt('user_1');
     const createReq = new Request('https://osanwall-api.workers.dev/api/motes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         authorId: 'user_1',
         text: 'hello osanwall',
@@ -96,5 +124,32 @@ describe('OsanWall Worker', () => {
     const listReq = new Request('https://osanwall-api.workers.dev/api/motes?x=0&y=0&w=800&h=600');
     const listResp = await worker.fetch(listReq, mockEnv, {});
     expect(listResp.status).toBe(200);
+  });
+
+  it('rejects mote create without auth', async () => {
+    const { default: worker } = await import('./index.js');
+    const req = new Request('https://osanwall-api.workers.dev/api/motes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authorId: 'user_1', text: 'x', x: 0, y: 0 }),
+    });
+    const resp = await worker.fetch(req, mockEnv, {});
+    expect(resp.status).toBe(401);
+  });
+
+  it('runs authorized sweep endpoint', async () => {
+    const { default: worker } = await import('./index.js');
+    const req = new Request('https://osanwall-api.workers.dev/api/motes/sweep', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer sweep-token',
+      },
+      body: JSON.stringify({}),
+    });
+    const resp = await worker.fetch(req, mockEnv, {});
+    expect(resp.status).toBe(200);
+    const body = await resp.json();
+    expect(body.ok).toBe(true);
   });
 });

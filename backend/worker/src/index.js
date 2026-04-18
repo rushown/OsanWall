@@ -132,13 +132,17 @@ async function handleRequest(request, env, ctx) {
       return handleBooksSearch(env, url);
     }
     if (apiPath === 'motes' && request.method === 'POST') {
-      return handleCreateMote(request, env);
+      const auth = await requireAuth(request, env);
+      if (auth.errorResponse) return auth.errorResponse;
+      return handleCreateMote(request, env, auth.userId);
     }
     if (apiPath === 'motes' && request.method === 'GET') {
       return handleListMotes(url, env);
     }
     if (apiPath === 'motes/interact' && request.method === 'POST') {
-      return handleMoteInteraction(request, env);
+      const auth = await requireAuth(request, env);
+      if (auth.errorResponse) return auth.errorResponse;
+      return handleMoteInteraction(request, env, auth.userId);
     }
     if (apiPath === 'motes/sweep' && request.method === 'POST') {
       return handleSweepRequest(request, env);
@@ -565,7 +569,7 @@ async function getFirebaseAccessToken(serviceAccount) {
 }
 
 // ─── Motes: Free KV Spatial/Decay Engine ──────────────────────────────────────
-async function handleCreateMote(request, env) {
+async function handleCreateMote(request, env, authenticatedUserId) {
   let body;
   try {
     body = await request.json();
@@ -573,18 +577,15 @@ async function handleCreateMote(request, env) {
     return jsonResponse({ error: 'Invalid JSON body' }, 400);
   }
 
-  const text = String(body.text || '').trim();
-  const authorId = String(body.authorId || '').trim();
-  const x = Number(body.x);
-  const y = Number(body.y);
-  const vibe = String(body.vibe || 'unknown').slice(0, 40);
+  const payloadValidation = validateCreateMotePayload(body);
+  if (!payloadValidation.ok) return jsonResponse({ error: payloadValidation.error }, 400);
+  const { text, x, y, vibe } = payloadValidation.value;
+  const authorId = getAuthorIdFromBody(body);
+  if (authorId !== authenticatedUserId) {
+    return jsonResponse({ error: 'authorId must match authenticated user' }, 403);
+  }
 
-  if (!authorId) return jsonResponse({ error: 'authorId is required' }, 400);
-  if (!text) return jsonResponse({ error: 'text is required' }, 400);
-  if (text.length > MOTE_INDEX.MAX_TEXT_LEN) return jsonResponse({ error: `text max length is ${MOTE_INDEX.MAX_TEXT_LEN}` }, 400);
-  if (!Number.isFinite(x) || !Number.isFinite(y)) return jsonResponse({ error: 'x and y must be numbers' }, 400);
-
-  const id = body.id ? String(body.id) : crypto.randomUUID();
+  const id = body.id && isSafeId(body.id) ? String(body.id) : crypto.randomUUID();
   const now = Date.now();
   const cell = getCellForPoint(x, y);
 
@@ -653,7 +654,7 @@ async function handleListMotes(url, env) {
   return jsonResponse({ motes, count: motes.length, bounds: expanded });
 }
 
-async function handleMoteInteraction(request, env) {
+async function handleMoteInteraction(request, env, authenticatedUserId) {
   let body;
   try {
     body = await request.json();
@@ -661,9 +662,12 @@ async function handleMoteInteraction(request, env) {
     return jsonResponse({ error: 'Invalid JSON body' }, 400);
   }
 
-  const moteId = String(body.moteId || '').trim();
-  const actorId = String(body.actorId || '').trim();
-  if (!moteId || !actorId) return jsonResponse({ error: 'moteId and actorId are required' }, 400);
+  const payloadValidation = validateMoteInteractionPayload(body);
+  if (!payloadValidation.ok) return jsonResponse({ error: payloadValidation.error }, 400);
+  const { moteId, actorId } = payloadValidation.value;
+  if (actorId !== authenticatedUserId) {
+    return jsonResponse({ error: 'actorId must match authenticated user' }, 403);
+  }
 
   const mote = await getMote(env.CACHE, moteId);
   if (!mote) return jsonResponse({ error: 'Mote not found' }, 404);
@@ -694,6 +698,95 @@ async function handleSweepRequest(request, env) {
   }
   const report = await runDecaySweep(env);
   return jsonResponse(report);
+}
+
+async function requireAuth(request, env) {
+  const authHeader = request.headers.get('Authorization') || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return { errorResponse: jsonResponse({ error: 'Missing bearer token' }, 401) };
+  }
+  const token = authHeader.slice('Bearer '.length).trim();
+  if (!token) return { errorResponse: jsonResponse({ error: 'Missing token' }, 401) };
+
+  try {
+    const payload = await verifyJwt(token, env.JWT_SECRET);
+    const userId = String(payload.sub || payload.user_id || '');
+    if (!userId) return { errorResponse: jsonResponse({ error: 'Token missing subject' }, 401) };
+    return { userId };
+  } catch (err) {
+    return { errorResponse: jsonResponse({ error: 'Invalid token' }, 401) };
+  }
+}
+
+function getAuthorIdFromBody(body) {
+  return String(body.authorId || body.author_id || '').trim();
+}
+
+function validateCreateMotePayload(body) {
+  if (!body || typeof body !== 'object') return { ok: false, error: 'Body must be an object' };
+  const text = String(body.text || '').trim();
+  const x = Number(body.x);
+  const y = Number(body.y);
+  const vibe = String(body.vibe || 'unknown').trim().slice(0, 40);
+  const authorId = getAuthorIdFromBody(body);
+  if (!authorId || !isSafeId(authorId)) return { ok: false, error: 'authorId is required' };
+  if (!text) return { ok: false, error: 'text is required' };
+  if (text.length > MOTE_INDEX.MAX_TEXT_LEN) return { ok: false, error: `text max length is ${MOTE_INDEX.MAX_TEXT_LEN}` };
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return { ok: false, error: 'x and y must be numbers' };
+  return { ok: true, value: { text, x, y, vibe } };
+}
+
+function validateMoteInteractionPayload(body) {
+  if (!body || typeof body !== 'object') return { ok: false, error: 'Body must be an object' };
+  const moteId = String(body.moteId || '').trim();
+  const actorId = String(body.actorId || '').trim();
+  if (!moteId || !isSafeId(moteId)) return { ok: false, error: 'moteId is required' };
+  if (!actorId || !isSafeId(actorId)) return { ok: false, error: 'actorId is required' };
+  return { ok: true, value: { moteId, actorId } };
+}
+
+function isSafeId(value) {
+  return typeof value === 'string' && value.length >= 3 && value.length <= 128 && /^[a-zA-Z0-9:_-]+$/.test(value);
+}
+
+async function verifyJwt(jwt, secret) {
+  const parts = jwt.split('.');
+  if (parts.length !== 3) throw new Error('Malformed JWT');
+  const [h, p, s] = parts;
+  const header = JSON.parse(textFromBase64Url(h));
+  const payload = JSON.parse(textFromBase64Url(p));
+  if (payload.exp && Date.now() >= payload.exp * 1000) throw new Error('Expired JWT');
+  if (header.alg !== 'HS256') return payload;
+  if (!secret) return payload;
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
+  const ok = await crypto.subtle.verify(
+    'HMAC',
+    key,
+    fromBase64Url(s),
+    new TextEncoder().encode(`${h}.${p}`)
+  );
+  if (!ok) throw new Error('Invalid JWT signature');
+  return payload;
+}
+
+function textFromBase64Url(input) {
+  return new TextDecoder().decode(fromBase64Url(input));
+}
+
+function fromBase64Url(input) {
+  const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '==='.slice((normalized.length + 3) % 4);
+  const bin = atob(padded);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) out[i] = bin.charCodeAt(i);
+  return out;
 }
 
 async function runDecaySweep(env) {
