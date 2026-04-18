@@ -19,6 +19,28 @@ const RATE_LIMITS = {
   AUTH: { requests: 10, window: 60 },       // 10 req/min for auth
 };
 
+const MOTE_INDEX = {
+  CELL_SIZE: 600,
+  VIEWPORT_MULTIPLIER: 2,
+  MAX_TEXT_LEN: 240,
+  MAX_RETURNED_MOTES: 300,
+};
+
+const DECAY = {
+  BASE_LAMBDA_PER_HOUR: 0.08,
+  INTERACTION_BETA: 0.65,
+  DENSITY_TARGET: 250,
+  DENSITY_GAMMA: 1.25,
+  AGE_A0_HOURS: 36,
+  AGE_SIGMOID_SPAN_HOURS: 10,
+  AGE_ETA: 0.7,
+  NOVELTY_KAPPA: 0.8,
+  MIN_VISIBLE_HOURS: 0.5,
+  GHOST_THRESHOLD: 0.18,
+  ARCHIVE_THRESHOLD: 0.05,
+  SWEEP_INTERVAL_HOURS: 5 / 60, // 5 minutes
+};
+
 // ─── Router ────────────────────────────────────────────────────────────────────
 export default {
   async fetch(request, env, ctx) {
@@ -28,6 +50,9 @@ export default {
       console.error('Unhandled error:', err);
       return jsonResponse({ error: 'Internal server error' }, 500);
     }
+  },
+  async scheduled(_event, env, ctx) {
+    ctx.waitUntil(runDecaySweep(env));
   },
 };
 
@@ -104,6 +129,18 @@ async function handleRequest(request, env, ctx) {
     }
     if (apiPath === 'books/search' && request.method === 'GET') {
       return handleBooksSearch(env, url);
+    }
+    if (apiPath === 'motes' && request.method === 'POST') {
+      return handleCreateMote(request, env);
+    }
+    if (apiPath === 'motes' && request.method === 'GET') {
+      return handleListMotes(url, env);
+    }
+    if (apiPath === 'motes/interact' && request.method === 'POST') {
+      return handleMoteInteraction(request, env);
+    }
+    if (apiPath === 'motes/sweep' && request.method === 'POST') {
+      return handleSweepRequest(request, env);
     }
 
     return jsonResponse({ error: 'Not found', path: pathname }, 404);
@@ -524,6 +561,298 @@ async function getFirebaseAccessToken(serviceAccount) {
 
   const tokenData = await tokenResp.json();
   return tokenData.access_token;
+}
+
+// ─── Motes: Free KV Spatial/Decay Engine ──────────────────────────────────────
+async function handleCreateMote(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const text = String(body.text || '').trim();
+  const authorId = String(body.authorId || '').trim();
+  const x = Number(body.x);
+  const y = Number(body.y);
+  const vibe = String(body.vibe || 'unknown').slice(0, 40);
+
+  if (!authorId) return jsonResponse({ error: 'authorId is required' }, 400);
+  if (!text) return jsonResponse({ error: 'text is required' }, 400);
+  if (text.length > MOTE_INDEX.MAX_TEXT_LEN) return jsonResponse({ error: `text max length is ${MOTE_INDEX.MAX_TEXT_LEN}` }, 400);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return jsonResponse({ error: 'x and y must be numbers' }, 400);
+
+  const id = body.id ? String(body.id) : crypto.randomUUID();
+  const now = Date.now();
+  const cell = getCellForPoint(x, y);
+
+  const mote = {
+    id,
+    authorId,
+    text,
+    x,
+    y,
+    vibe,
+    alpha: 1,
+    status: 'visible',
+    createdAt: now,
+    updatedAt: now,
+    lastDecayAt: now,
+    uniqueInteractions: 0,
+    interactions: 0,
+    lastInteractionAt: null,
+  };
+
+  await env.CACHE.put(`mote:${id}`, JSON.stringify(mote));
+  await addMoteToCell(env.CACHE, cell, id);
+
+  return jsonResponse({ mote });
+}
+
+async function handleListMotes(url, env) {
+  const x = Number(url.searchParams.get('x') || 0);
+  const y = Number(url.searchParams.get('y') || 0);
+  const width = Math.max(1, Number(url.searchParams.get('w') || 1200));
+  const height = Math.max(1, Number(url.searchParams.get('h') || 800));
+  const limit = Math.min(
+    MOTE_INDEX.MAX_RETURNED_MOTES,
+    Math.max(1, Number(url.searchParams.get('limit') || 120))
+  );
+
+  const expanded = {
+    minX: x - width * (MOTE_INDEX.VIEWPORT_MULTIPLIER - 1) / 2,
+    maxX: x + width * (MOTE_INDEX.VIEWPORT_MULTIPLIER + 1) / 2,
+    minY: y - height * (MOTE_INDEX.VIEWPORT_MULTIPLIER - 1) / 2,
+    maxY: y + height * (MOTE_INDEX.VIEWPORT_MULTIPLIER + 1) / 2,
+  };
+
+  const cells = getCellsForBounds(expanded);
+  const ids = new Set();
+  await Promise.all(cells.map(async (cellKey) => {
+    const raw = await env.CACHE.get(`cell:${cellKey}`);
+    if (!raw) return;
+    try {
+      const arr = JSON.parse(raw);
+      for (const id of arr) ids.add(id);
+    } catch {
+      // ignore malformed cell
+    }
+  }));
+
+  const motes = [];
+  for (const id of ids) {
+    if (motes.length >= limit) break;
+    const mote = await getMote(env.CACHE, id);
+    if (!mote || mote.status === 'archived') continue;
+    if (mote.x < expanded.minX || mote.x > expanded.maxX || mote.y < expanded.minY || mote.y > expanded.maxY) continue;
+    motes.push(mote);
+  }
+
+  return jsonResponse({ motes, count: motes.length, bounds: expanded });
+}
+
+async function handleMoteInteraction(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const moteId = String(body.moteId || '').trim();
+  const actorId = String(body.actorId || '').trim();
+  if (!moteId || !actorId) return jsonResponse({ error: 'moteId and actorId are required' }, 400);
+
+  const mote = await getMote(env.CACHE, moteId);
+  if (!mote) return jsonResponse({ error: 'Mote not found' }, 404);
+
+  const dedupeKey = `mote:ix:${moteId}:${actorId}`;
+  const alreadySeen = await env.CACHE.get(dedupeKey);
+  mote.interactions = (mote.interactions || 0) + 1;
+  if (!alreadySeen) {
+    mote.uniqueInteractions = (mote.uniqueInteractions || 0) + 1;
+    await env.CACHE.put(dedupeKey, '1', { expirationTtl: 60 * 60 * 24 * 14 }); // 14d
+  }
+  mote.lastInteractionAt = Date.now();
+  mote.updatedAt = Date.now();
+  await env.CACHE.put(`mote:${mote.id}`, JSON.stringify(mote));
+
+  return jsonResponse({
+    success: true,
+    moteId,
+    interactions: mote.interactions,
+    uniqueInteractions: mote.uniqueInteractions,
+  });
+}
+
+async function handleSweepRequest(request, env) {
+  if (env.SWEEP_TOKEN) {
+    const auth = request.headers.get('Authorization') || '';
+    if (auth !== `Bearer ${env.SWEEP_TOKEN}`) return jsonResponse({ error: 'Unauthorized' }, 401);
+  }
+  const report = await runDecaySweep(env);
+  return jsonResponse(report);
+}
+
+async function runDecaySweep(env) {
+  const list = await env.CACHE.list({ prefix: 'mote:' });
+  const motes = [];
+  for (const k of list.keys) {
+    if (!k.name.startsWith('mote:ix:')) {
+      const raw = await env.CACHE.get(k.name);
+      if (!raw) continue;
+      try {
+        motes.push(JSON.parse(raw));
+      } catch {
+        // ignore malformed entry
+      }
+    }
+  }
+
+  const activeMotes = motes.filter((m) => m.status !== 'archived');
+  const density = activeMotes.length / DECAY.DENSITY_TARGET;
+  const vibeCounts = {};
+  for (const mote of activeMotes) {
+    const key = mote.vibe || 'unknown';
+    vibeCounts[key] = (vibeCounts[key] || 0) + 1;
+  }
+  const maxVibeCount = Math.max(1, ...Object.values(vibeCounts));
+
+  let archived = 0;
+  let ghosted = 0;
+  let decayed = 0;
+
+  for (const mote of activeMotes) {
+    const updated = applyDecayStep(mote, {
+      density,
+      vibeCounts,
+      maxVibeCount,
+      now: Date.now(),
+    });
+    if (updated.alpha !== mote.alpha || updated.status !== mote.status) decayed += 1;
+    if (updated.status === 'ghosted' && mote.status !== 'ghosted') ghosted += 1;
+    if (updated.status === 'archived' && mote.status !== 'archived') {
+      archived += 1;
+      await removeMoteFromCell(env.CACHE, getCellForPoint(updated.x, updated.y), updated.id);
+    }
+    await env.CACHE.put(`mote:${updated.id}`, JSON.stringify(updated));
+  }
+
+  return {
+    ok: true,
+    scanned: motes.length,
+    active: activeMotes.length,
+    decayed,
+    ghosted,
+    archived,
+    at: Date.now(),
+  };
+}
+
+function applyDecayStep(mote, context) {
+  const now = context.now;
+  const ageHours = Math.max(0, (now - (mote.createdAt || now)) / 3600000);
+  const sinceLastDecayHours = Math.max(
+    DECAY.SWEEP_INTERVAL_HOURS,
+    (now - (mote.lastDecayAt || now)) / 3600000
+  );
+  const uniqueInteractions = Math.max(0, Number(mote.uniqueInteractions || 0));
+
+  if (ageHours < DECAY.MIN_VISIBLE_HOURS) {
+    return { ...mote, lastDecayAt: now, updatedAt: now };
+  }
+
+  const densityBoost = 1 + DECAY.DENSITY_GAMMA * Math.max(0, context.density - 1) ** 2;
+  const ageBoost = 1 + DECAY.AGE_ETA * sigmoid((ageHours - DECAY.AGE_A0_HOURS) / DECAY.AGE_SIGMOID_SPAN_HOURS);
+  const vibeCount = context.vibeCounts[mote.vibe || 'unknown'] || 1;
+  const novelty = 1 - Math.min(1, vibeCount / context.maxVibeCount);
+  const noveltyBoost = 1 + DECAY.NOVELTY_KAPPA * (1 - novelty);
+  const interactionDamping = 1 / (1 + DECAY.INTERACTION_BETA * Math.log1p(uniqueInteractions));
+
+  const lambdaPerHour =
+    DECAY.BASE_LAMBDA_PER_HOUR *
+    densityBoost *
+    ageBoost *
+    noveltyBoost *
+    interactionDamping;
+
+  const nextAlpha = Math.max(0, Number(mote.alpha || 1) * Math.exp(-lambdaPerHour * sinceLastDecayHours));
+  let nextStatus = mote.status || 'visible';
+  if (nextAlpha < DECAY.ARCHIVE_THRESHOLD) nextStatus = 'archived';
+  else if (nextAlpha < DECAY.GHOST_THRESHOLD) nextStatus = 'ghosted';
+  else nextStatus = 'visible';
+
+  return {
+    ...mote,
+    alpha: round4(nextAlpha),
+    status: nextStatus,
+    lastDecayAt: now,
+    updatedAt: now,
+  };
+}
+
+function sigmoid(x) {
+  return 1 / (1 + Math.exp(-x));
+}
+
+function round4(n) {
+  return Math.round(n * 10000) / 10000;
+}
+
+function getCellForPoint(x, y) {
+  const cx = Math.floor(x / MOTE_INDEX.CELL_SIZE);
+  const cy = Math.floor(y / MOTE_INDEX.CELL_SIZE);
+  return `${cx}:${cy}`;
+}
+
+function getCellsForBounds(bounds) {
+  const minCx = Math.floor(bounds.minX / MOTE_INDEX.CELL_SIZE);
+  const maxCx = Math.floor(bounds.maxX / MOTE_INDEX.CELL_SIZE);
+  const minCy = Math.floor(bounds.minY / MOTE_INDEX.CELL_SIZE);
+  const maxCy = Math.floor(bounds.maxY / MOTE_INDEX.CELL_SIZE);
+  const cells = [];
+  for (let cx = minCx; cx <= maxCx; cx += 1) {
+    for (let cy = minCy; cy <= maxCy; cy += 1) {
+      cells.push(`${cx}:${cy}`);
+    }
+  }
+  return cells;
+}
+
+async function addMoteToCell(kv, cellKey, moteId) {
+  const key = `cell:${cellKey}`;
+  const raw = await kv.get(key);
+  const arr = raw ? safeJsonArray(raw) : [];
+  if (!arr.includes(moteId)) arr.push(moteId);
+  await kv.put(key, JSON.stringify(arr));
+}
+
+async function removeMoteFromCell(kv, cellKey, moteId) {
+  const key = `cell:${cellKey}`;
+  const raw = await kv.get(key);
+  if (!raw) return;
+  const arr = safeJsonArray(raw).filter((id) => id !== moteId);
+  await kv.put(key, JSON.stringify(arr));
+}
+
+function safeJsonArray(raw) {
+  try {
+    const val = JSON.parse(raw);
+    return Array.isArray(val) ? val : [];
+  } catch {
+    return [];
+  }
+}
+
+async function getMote(kv, id) {
+  const raw = await kv.get(`mote:${id}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 // ─── Rate Limiter (KV-based) ──────────────────────────────────────────────────
