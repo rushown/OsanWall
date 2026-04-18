@@ -1,0 +1,46 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.jks
+*.keystore
+
+# API keys - NEVER commit
+local.properties
+app/google-services.json
+google-services.json
+**/google-services.json
+
+# Backend secrets
+backend/worker/.dev.vars
+.dev.vars
+*.env
+.env
+.env.local
+.env.production
+
+# Node
+node_modules/
+backend/worker/node_modules/
+
+# Gradle
+.gradle/
+build/
+app/build/
+**/build/
+
+# Android generated
+app/src/main/assets/
+*.apk
+*.aab
+
+# Kotlin
+*.class
+
+# Logs
+*.log

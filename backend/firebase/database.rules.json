@@ -1,0 +1,54 @@
+{
+  "rules": {
+    // ── Messages ────────────────────────────────────────────────────────────
+    "messages": {
+      "$chatId": {
+        ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).exists()",
+        "$messageId": {
+          ".validate": "newData.hasChildren(['senderId', 'content', 'type', 'timestamp']) && newData.child('senderId').val() === auth.uid && newData.child('content').val().length > 0 && newData.child('content').val().length <= 1000"
+        }
+      }
+    },
+
+    // ── Chats metadata ───────────────────────────────────────────────────────
+    "chats": {
+      "$chatId": {
+        ".read": "auth != null && data.child('participants').child(auth.uid).exists()",
+        ".write": "auth != null && (data.child('participants').child(auth.uid).exists() || !data.exists())",
+        "participants": {
+          ".validate": "newData.hasChildren([auth.uid])"
+        },
+        "lastMessage": { ".validate": "newData.isString() && newData.val().length <= 1000" },
+        "lastMessageTime": { ".validate": "newData.isNumber()" },
+        "lastMessageSenderId": { ".validate": "newData.isString()" }
+      }
+    },
+
+    // ── Typing indicators ────────────────────────────────────────────────────
+    "typing": {
+      "$chatId": {
+        ".read": "auth != null",
+        "$userId": {
+          ".write": "auth != null && auth.uid === $userId",
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+
+    // ── Presence ─────────────────────────────────────────────────────────────
+    "presence": {
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $userId",
+        ".validate": "newData.hasChildren(['isOnline', 'lastSeen'])"
+      }
+    },
+
+    // ── Deny all else ────────────────────────────────────────────────────────
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

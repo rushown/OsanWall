@@ -1,0 +1,57 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Helper functions ──────────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    function isValidSize() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB max
+    }
+    function isValidImageSize() {
+      return request.resource.size < 5 * 1024 * 1024; // 5MB for images
+    }
+
+    // ── Avatars ───────────────────────────────────────────────────────────────
+    match /avatars/{userId}.webp {
+      allow read: if isAuth();
+      allow write: if isAuth() && isOwner(userId) && isImage() && isValidImageSize();
+    }
+    match /avatars/{userId}.jpg {
+      allow read: if isAuth();
+      allow write: if isAuth() && isOwner(userId) && isImage() && isValidImageSize();
+    }
+
+    // ── Cover photos ──────────────────────────────────────────────────────────
+    match /covers/{userId}.webp {
+      allow read: if isAuth();
+      allow write: if isAuth() && isOwner(userId) && isImage() && isValidImageSize();
+    }
+
+    // ── Post images ───────────────────────────────────────────────────────────
+    match /posts/{userId}/{imageId} {
+      allow read: if isAuth();
+      allow write: if isAuth() && isOwner(userId) && isImage() && isValidImageSize();
+      allow delete: if isAuth() && isOwner(userId);
+    }
+
+    // ── Chat media ────────────────────────────────────────────────────────────
+    match /chat_media/{chatId}/{messageId} {
+      allow read: if isAuth();
+      allow write: if isAuth() && isImage() && isValidImageSize();
+      allow delete: if isAuth();
+    }
+
+    // ── Deny everything else ──────────────────────────────────────────────────
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
