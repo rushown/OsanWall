@@ -3,8 +3,11 @@ package com.osanwall.di
 import android.content.Context
 import androidx.room.Room
 import com.osanwall.BuildConfig
-import com.osanwall.data.api.*
-import com.osanwall.data.repository.*
+import com.osanwall.data.api.GoogleBooksApiService
+import com.osanwall.data.api.SpotifyApiService
+import com.osanwall.data.api.SpotifyAuthService
+import com.osanwall.data.api.TmdbApiService
+import com.osanwall.data.repository.OsanWallDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +18,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
