@@ -1,8 +1,6 @@
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("com.google.gms.google-services")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -22,11 +20,11 @@ fun localProp(key: String, default: String = "") =
     localProperties.getProperty(key, project.findProperty(key)?.toString() ?: default)
 
 android {
-    namespace = "com.osanwall"
+    namespace = "com.merowall"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.osanwall"
+        applicationId = "com.merowall"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -47,7 +45,7 @@ android {
             create("release") {
                 storeFile = file(keystorePath)
                 storePassword = localProp("KEYSTORE_PASSWORD")
-                keyAlias = localProp("KEY_ALIAS", "osanwall")
+                keyAlias = localProp("KEY_ALIAS", "merowall")
                 keyPassword = localProp("KEY_PASSWORD")
             }
         }
@@ -131,14 +129,14 @@ dependencies {
     implementation(libs.coil.gif)
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.crashlytics)
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(libs.firebase.analytics)
     implementation(libs.firebase.config)
     implementation(libs.play.services.auth)
 
