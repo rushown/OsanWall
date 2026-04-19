@@ -76,6 +76,8 @@ fun Navigation() {
         ) {
             composable("home") {
                 HomeScreen(
+                    isLoggedIn = authState.isLoggedIn,
+                    onRequestAuth = { showAuthSheet = true },
                     onOpenExplore = {
                         navController.navigate("discover") {
                             popUpTo("home") { saveState = true }
@@ -98,8 +100,7 @@ fun Navigation() {
                         } else {
                             showAuthSheet = true
                         }
-                    },
-                    onOpenCreate = { showCreateSheet = true }
+                    }
                 )
             }
             composable("discover") {
