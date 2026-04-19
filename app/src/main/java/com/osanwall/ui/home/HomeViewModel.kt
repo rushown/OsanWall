@@ -29,9 +29,10 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val userId = authRepository.currentUserId ?: ""
+    /** Always read fresh so posting works right after sign-in. */
+    private val currentUserId: String get() = authRepository.currentUserId ?: ""
 
-    val feedPosts: Flow<PagingData<Post>> = postRepository.getFeedPosts(userId)
+    val feedPosts: Flow<PagingData<Post>> = postRepository.getFeedPosts(currentUserId)
         .cachedIn(viewModelScope)
 
     private val _trendingMovies = MutableStateFlow<List<Movie>>(emptyList())
@@ -55,18 +56,18 @@ class HomeViewModel @Inject constructor(
 
     fun likePost(postId: String, currentLikeCount: Int, isLiked: Boolean) {
         viewModelScope.launch {
-            postRepository.likePost(postId, userId, !isLiked)
+            postRepository.likePost(postId, currentUserId, !isLiked)
         }
     }
 
     fun createPost(type: PostType, content: String, mediaData: MediaData? = null) {
-        if (userId.isEmpty()) return
+        if (currentUserId.isEmpty()) return
         viewModelScope.launch {
             _uiState.update { it.copy(isPosting = true, error = null) }
             try {
-                val user = authRepository.fetchUser(userId)
+                val user = authRepository.fetchUser(currentUserId)
                 val post = Post(
-                    userId = userId,
+                    userId = currentUserId,
                     userUsername = user.username.ifBlank { "user" },
                     userAvatarUrl = user.avatarUrl,
                     type = type,
@@ -87,13 +88,13 @@ class HomeViewModel @Inject constructor(
     /** Short thought for the home composer (same pipeline as [createPost]). */
     fun postThought(text: String) {
         val trimmed = text.trim()
-        if (userId.isEmpty() || trimmed.isEmpty() || trimmed.length > 2000) return
+        if (currentUserId.isEmpty() || trimmed.isEmpty() || trimmed.length > 2000) return
         createPost(PostType.THOUGHT, trimmed)
     }
 
     fun deletePost(postId: String) {
         viewModelScope.launch {
-            postRepository.deletePost(postId, userId)
+            postRepository.deletePost(postId, currentUserId)
         }
     }
 
