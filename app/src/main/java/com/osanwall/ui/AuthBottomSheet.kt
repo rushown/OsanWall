@@ -15,8 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -114,7 +112,7 @@ fun AuthBottomSheet(
                     value = username,
                     onValueChange = { username = it.lowercase().replace(" ", "") },
                     label = { Text("Username") },
-                    leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Person, null) },
+                    leadingIcon = { Icon(Icons.Default.Person, null) },
                     prefix = { Text("@") },
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth(),
@@ -128,7 +126,7 @@ fun AuthBottomSheet(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Email, null) },
+                leadingIcon = { Icon(Icons.Default.Email, null) },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = if (tab == 0) ImeAction.Done else ImeAction.Next
@@ -144,12 +142,11 @@ fun AuthBottomSheet(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Lock, null) },
+                leadingIcon = { Icon(Icons.Default.Lock, null) },
                 trailingIcon = {
-                    androidx.compose.material3.IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        androidx.compose.material3.Icon(
-                            if (passwordVisible) androidx.compose.material.icons.Icons.Default.Visibility
-                            else androidx.compose.material.icons.Icons.Default.VisibilityOff,
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                             contentDescription = null
                         )
                     }
