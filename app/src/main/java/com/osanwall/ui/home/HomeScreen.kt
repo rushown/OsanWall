@@ -26,31 +26,33 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubble
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
@@ -69,8 +71,9 @@ import com.osanwall.ui.components.GlassCard
 import com.osanwall.ui.components.PressableScaleBox
 import com.osanwall.ui.components.UserAvatar
 import com.osanwall.ui.components.shimmerEffect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenExplore: () -> Unit = {},
@@ -86,14 +89,23 @@ fun HomeScreen(
     val suggestedCreators = listOf("@LunaSky", "@Vertex", "@NeonJace", "@Minimal_")
 
     val listState = rememberLazyListState()
-    val composeFocus = remember { FocusRequester() }
-    val scope = rememberCoroutineScope()
     var composerText by remember { mutableStateOf("") }
+    var showComposeSheet by remember { mutableStateOf(false) }
+    val composeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val composeFocus = remember { FocusRequester() }
 
     LaunchedEffect(uiState.feedVersion) {
         if (uiState.feedVersion > 0) {
             composerText = ""
             feedPosts.refresh()
+            showComposeSheet = false
+        }
+    }
+
+    LaunchedEffect(showComposeSheet) {
+        if (showComposeSheet) {
+            delay(280)
+            composeFocus.requestFocus()
         }
     }
 
@@ -133,16 +145,10 @@ fun HomeScreen(
             }
 
             item {
-                CreatePostComposer(
+                CreatePostPromptRow(
                     isLoggedIn = isLoggedIn,
-                    text = composerText,
-                    onTextChange = { composerText = it },
-                    isPosting = uiState.isPosting,
-                    onRequestAuth = onRequestAuth,
-                    onPost = {
-                        viewModel.postThought(composerText)
-                    },
-                    focusRequester = composeFocus
+                    onOpenComposer = { showComposeSheet = true },
+                    onRequestAuth = onRequestAuth
                 )
             }
 
@@ -285,21 +291,21 @@ fun HomeScreen(
             }
         }
 
-        if (isLoggedIn) {
-            SmallFloatingActionButton(
-                onClick = {
-                    scope.launch {
-                        listState.animateScrollToItem(1)
-                        composeFocus.requestFocus()
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 20.dp, bottom = 20.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+        if (showComposeSheet && isLoggedIn) {
+            ModalBottomSheet(
+                onDismissRequest = { showComposeSheet = false },
+                sheetState = composeSheetState,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                tonalElevation = 0.dp
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "Compose post")
+                CreatePostComposerSheet(
+                    text = composerText,
+                    onTextChange = { composerText = it },
+                    isPosting = uiState.isPosting,
+                    onDismiss = { showComposeSheet = false },
+                    onPost = { viewModel.postThought(composerText) },
+                    focusRequester = composeFocus
+                )
             }
         }
     }
