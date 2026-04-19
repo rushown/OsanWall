@@ -27,7 +27,7 @@ fun NotificationsScreen() {
         TopAppBar(
             title = {
                 Text(
-                    "Alerts",
+                    "Notifs",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold
                 )
