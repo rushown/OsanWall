@@ -1,6 +1,7 @@
 package com.osanwall.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,9 +38,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.osanwall.ui.components.GlassCard
-import com.osanwall.ui.components.OsanWallActionSheet
+import com.osanwall.ui.components.PressableScaleBox
 import com.osanwall.ui.components.UserAvatar
 import com.osanwall.ui.components.shimmerEffect
 
@@ -60,15 +58,16 @@ import com.osanwall.ui.components.shimmerEffect
 fun HomeScreen(
     onOpenExplore: () -> Unit = {},
     onOpenProfile: (String) -> Unit = {},
+    onOpenMyProfile: () -> Unit = {},
+    onOpenCreate: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val trending by viewModel.trendingMovies.collectAsState()
     val suggestedCreators = listOf("@LunaSky", "@Vertex", "@NeonJace", "@Minimal_")
-    var showCreateSheet by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 110.dp),
+        contentPadding = PaddingValues(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
@@ -82,8 +81,10 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        UserAvatar(imageUrl = "", size = 40.dp, hasGradientBorder = true)
-                        Text("MeroWall", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                        Box(Modifier.clickable(onClick = onOpenMyProfile)) {
+                            UserAvatar(imageUrl = "", size = 40.dp, hasGradientBorder = true)
+                        }
+                        Text("OsanWall", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = onOpenExplore) {
                         Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.primary)
@@ -164,8 +165,11 @@ fun HomeScreen(
                 }
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(trending.take(8)) { movie ->
-                        Box(modifier = Modifier.width(140.dp).aspectRatio(0.66f).clip(RoundedCornerShape(14.dp))) {
+                    items(trending.take(8), key = { it.id }) { movie ->
+                        PressableScaleBox(
+                            modifier = Modifier.width(140.dp).aspectRatio(0.66f).clip(RoundedCornerShape(14.dp)),
+                            onClick = onOpenExplore
+                        ) {
                             AsyncImage(model = movie.posterUrl, contentDescription = movie.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                             Box(
                                 modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()
@@ -180,7 +184,7 @@ fun HomeScreen(
         }
 
         item {
-            GlassCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), onClick = { showCreateSheet = true }) {
+            GlassCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), onClick = onOpenCreate) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         "Design is not just what it looks like and feels like. Design is how it works.",
@@ -208,15 +212,6 @@ fun HomeScreen(
         }
     }
 
-    if (showCreateSheet) {
-        OsanWallActionSheet(
-            title = "Create on Osanwall",
-            subtitle = "Choose a format to post: thought, song, movie, or book.",
-            primaryLabel = "Start Creating",
-            onDismiss = { showCreateSheet = false },
-            onPrimary = onOpenExplore
-        )
-    }
 }
 
 @Composable
