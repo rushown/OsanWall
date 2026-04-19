@@ -243,15 +243,18 @@ fun GradientButton(
 @Composable
 fun OsanWallBottomBar(
     currentRoute: String?,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    isLoggedIn: Boolean
 ) {
-    val items = listOf(
-        BottomNavItem("home", Icons.Default.Home, "Feed"),
-        BottomNavItem("discover", Icons.Default.Explore, "Explore"),
-        BottomNavItem("create", Icons.Default.AddCircle, "Create"),
-        BottomNavItem("notifications", Icons.Default.Notifications, "Alerts"),
-        BottomNavItem("profile", Icons.Default.Person, "Profile"),
-    )
+    val items = buildList {
+        add(BottomNavItem("home", Icons.Default.Home, "Feed"))
+        add(BottomNavItem("discover", Icons.Default.Explore, "Explore"))
+        if (isLoggedIn) {
+            add(BottomNavItem("chat", Icons.Default.ChatBubble, "Chat"))
+        }
+        add(BottomNavItem("notifications", Icons.Default.Notifications, "Notifs"))
+        add(BottomNavItem("profile", Icons.Default.Person, "Profile"))
+    }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -270,59 +273,37 @@ fun OsanWallBottomBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
-                val selected = currentRoute == item.route ||
-                    (item.route == "profile" && currentRoute?.startsWith("profile") == true)
-                if (item.route == "create") {
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.secondary
-                                    )
-                                )
-                            )
-                            .clickable { onNavigate(item.route) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.label,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(28.dp)
+                val selected = when (item.route) {
+                    "profile" -> currentRoute?.startsWith("profile") == true
+                    "chat" -> currentRoute == "chat" || currentRoute?.startsWith("chat/") == true
+                    else -> currentRoute == item.route
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                            else Color.Transparent
                         )
-                    }
-                } else {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                else Color.Transparent
-                            )
-                            .clickable { onNavigate(item.route) }
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.label,
-                            tint = if (selected) MaterialTheme.colorScheme.primary
-                                   else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(24.dp)
+                        .clickable { onNavigate(item.route) }
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label,
+                        tint = if (selected) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    if (selected) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = item.label.uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.ExtraBold
                         )
-                        if (selected) {
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = item.label.uppercase(),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                        }
                     }
                 }
             }

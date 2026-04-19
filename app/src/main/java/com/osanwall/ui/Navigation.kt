@@ -20,8 +20,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.osanwall.ui.components.OsanWallActionSheet
 import com.osanwall.ui.components.OsanWallBottomBar
+import com.osanwall.ui.chat.ChatDetailScreen
+import com.osanwall.ui.chat.ChatListScreen
 import com.osanwall.ui.discover.DiscoverScreen
 import com.osanwall.ui.home.HomeScreen
 import com.osanwall.ui.notifications.NotificationsScreen
@@ -34,7 +35,6 @@ fun Navigation() {
     val authState by authViewModel.uiState.collectAsState()
 
     var showAuthSheet by remember { mutableStateOf(false) }
-    var showCreateSheet by remember { mutableStateOf(false) }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
