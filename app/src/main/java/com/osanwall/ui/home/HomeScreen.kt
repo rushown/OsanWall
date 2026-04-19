@@ -165,7 +165,7 @@ fun HomeScreen(
                 }
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(trending.take(8), key = { it.id }) { movie ->
+                    items(trending.take(8), key = { "${it.id}_${it.title}" }) { movie ->
                         PressableScaleBox(
                             modifier = Modifier.width(140.dp).aspectRatio(0.66f).clip(RoundedCornerShape(14.dp)),
                             onClick = onOpenExplore

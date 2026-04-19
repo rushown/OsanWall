@@ -120,8 +120,11 @@ fun DiscoverScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             userScrollEnabled = false
                         ) {
-                            items(uiState.trendingMovies) { movie ->
-                                Box(modifier = Modifier.aspectRatio(0.67f).clip(RoundedCornerShape(12.dp))) {
+                            items(uiState.trendingMovies, key = { it.id + it.title }) { movie ->
+                                PressableScaleBox(
+                                    modifier = Modifier.aspectRatio(0.67f).clip(RoundedCornerShape(12.dp)),
+                                    onClick = { }
+                                ) {
                                     AsyncImage(
                                         model = movie.posterUrl,
                                         contentDescription = movie.title,
@@ -298,16 +301,20 @@ fun SongSearchItem(song: Song) {
 
 @Composable
 fun CategoryTile(label: String, icon: ImageVector, color: Color) {
-    Box(
+    PressableScaleBox(
         modifier = Modifier
             .size(100.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(color.copy(0.12f))
-            .border(0.5.dp, color.copy(0.3f), RoundedCornerShape(20.dp))
-            .clickable {}
-            .padding(12.dp)
+            .border(0.5.dp, color.copy(0.3f), RoundedCornerShape(20.dp)),
+        onClick = { }
     ) {
-        Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxSize()) {
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp)
+        ) {
             Icon(icon, null, tint = color, modifier = Modifier.size(28.dp))
             Text(label, style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.ExtraBold)
         }

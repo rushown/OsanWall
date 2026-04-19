@@ -21,8 +21,9 @@ import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.osanwall.data.model.*
-import com.osanwall.ui.components.*
+import com.osanwall.ui.components.PressableScaleBox
 import com.osanwall.ui.components.UserAvatar
+import com.osanwall.ui.components.shimmerEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,9 +38,7 @@ fun ProfileScreen(
     val user = uiState.user
 
     if (uiState.isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
+        ProfileScreenSkeleton()
         return
     }
 
