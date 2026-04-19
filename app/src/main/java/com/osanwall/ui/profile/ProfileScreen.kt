@@ -239,35 +239,90 @@ fun ProfileSection(title: String, icon: ImageVector, accentColor: Color, content
 
 @Composable
 fun SongCard(song: Song) {
-    Column(modifier = Modifier.width(140.dp)) {
-        AsyncImage(
-            model = song.albumArtUrl,
-            contentDescription = song.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.size(140.dp).clip(RoundedCornerShape(16.dp))
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(song.title, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Bold)
-        Text(song.artist, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    PressableScaleBox(
+        modifier = Modifier.width(140.dp),
+        onClick = { }
+    ) {
+        Column {
+            AsyncImage(
+                model = song.albumArtUrl,
+                contentDescription = song.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(140.dp).clip(RoundedCornerShape(16.dp))
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(song.title, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Bold)
+            Text(song.artist, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
     }
 }
 
 @Composable
 fun MovieCard(movie: Movie) {
-    AsyncImage(
-        model = movie.posterUrl,
-        contentDescription = movie.title,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.width(110.dp).height(165.dp).clip(RoundedCornerShape(14.dp))
-    )
+    PressableScaleBox(
+        modifier = Modifier.width(110.dp).height(165.dp).clip(RoundedCornerShape(14.dp)),
+        onClick = { }
+    ) {
+        AsyncImage(
+            model = movie.posterUrl,
+            contentDescription = movie.title,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
 }
 
 @Composable
 fun BookCard(book: Book) {
-    AsyncImage(
-        model = book.coverUrl,
-        contentDescription = book.title,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.width(110.dp).height(165.dp).clip(RoundedCornerShape(14.dp))
-    )
+    PressableScaleBox(
+        modifier = Modifier.width(110.dp).height(165.dp).clip(RoundedCornerShape(14.dp)),
+        onClick = { }
+    ) {
+        AsyncImage(
+            model = book.coverUrl,
+            contentDescription = book.title,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun ProfileScreenSkeleton() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 100.dp)
+    ) {
+        item {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .shimmerEffect()
+            )
+        }
+        item {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .offset(y = (-36).dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .shimmerEffect()
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(Modifier.width(120.dp).height(40.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+                    Box(Modifier.width(80.dp).height(36.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+                }
+            }
+        }
+        items(3) {
+            com.osanwall.ui.components.ShimmerFeedItem()
+        }
+    }
 }
