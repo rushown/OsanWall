@@ -1,6 +1,6 @@
 -- OsanWall E2EE message plane — PostgreSQL schema
 -- Application-layer encryption: server stores ciphertext and blinded lookup keys only.
--- Run after: CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- Requires PostgreSQL 13+ (gen_random_uuid). Optional: pgcrypto for additional helpers.
 
 -- ---------------------------------------------------------------------------
 -- Users: long-term identity is Ed25519 public key bytes (not Firebase UID in plaintext for E2EE plane).
