@@ -7,6 +7,9 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -64,7 +67,7 @@ fun ProfileScreen(
                             .padding(8.dp)
                             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.35f), CircleShape)
                     ) {
-                        Icon(Icons.Default.ArrowBack, null, tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                     }
                 } else {
                     IconButton(
@@ -125,7 +128,7 @@ fun ProfileScreen(
                                 onClick = { viewModel.toggleFollow() }
                             )
                             OutlinedButton(onClick = { onOpenChat(userId) }) {
-                                Icon(Icons.Default.Message, null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.AutoMirrored.Filled.Message, null, modifier = Modifier.size(16.dp))
                             }
                         }
                     }
@@ -190,7 +193,7 @@ fun ProfileScreen(
         // Featured Books
         if (user.topBooks.isNotEmpty()) {
             item {
-                ProfileSection(title = "Featured Books", icon = Icons.Default.MenuBook, accentColor = MaterialTheme.colorScheme.tertiary) {
+                ProfileSection(title = "Featured Books", icon = Icons.AutoMirrored.Filled.MenuBook, accentColor = MaterialTheme.colorScheme.tertiary) {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
