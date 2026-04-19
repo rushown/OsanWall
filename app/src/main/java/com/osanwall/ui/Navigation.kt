@@ -125,6 +125,33 @@ fun Navigation() {
                     }
                 )
             }
+            composable(
+                route = "chat/{chatId}/{username}/{avatarUrl}",
+                arguments = listOf(
+                    navArgument("chatId") { type = NavType.StringType },
+                    navArgument("username") { type = NavType.StringType },
+                    navArgument("avatarUrl") { type = NavType.StringType }
+                )
+            ) { entry ->
+                val chatId = Uri.decode(entry.arguments?.getString("chatId").orEmpty())
+                val username = Uri.decode(entry.arguments?.getString("username").orEmpty())
+                val avatarUrl = Uri.decode(entry.arguments?.getString("avatarUrl").orEmpty())
+                ChatDetailScreen(
+                    chatId = chatId,
+                    otherUsername = username,
+                    otherAvatarUrl = avatarUrl,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable("chat") {
+                ChatListScreen(
+                    onOpenChat = { chatId, username, avatarUrl ->
+                        navController.navigate(
+                            "chat/${Uri.encode(chatId)}/${Uri.encode(username)}/${Uri.encode(avatarUrl)}"
+                        )
+                    }
+                )
+            }
             composable("notifications") {
                 NotificationsScreen()
             }
@@ -158,20 +185,6 @@ fun Navigation() {
                 showAuthSheet = false
                 navController.navigate("profile/me") {
                     launchSingleTop = true
-                }
-            }
-        )
-        showCreateSheet -> OsanWallActionSheet(
-            title = "Create on OsanWall",
-            subtitle = "Choose a format to post: thought, song, movie, or book.",
-            primaryLabel = "Start Creating",
-            onDismiss = { showCreateSheet = false },
-            onPrimary = {
-                showCreateSheet = false
-                navController.navigate("discover") {
-                    popUpTo("home") { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
                 }
             }
         )
