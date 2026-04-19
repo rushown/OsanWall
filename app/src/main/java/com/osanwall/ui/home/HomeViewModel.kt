@@ -60,8 +60,8 @@ class HomeViewModel @Inject constructor(
     }
 
     fun createPost(type: PostType, content: String, mediaData: MediaData? = null) {
+        if (userId.isEmpty()) return
         viewModelScope.launch {
-            if (userId.isEmpty()) return@launch
             _uiState.update { it.copy(isPosting = true, error = null) }
             try {
                 val user = authRepository.fetchUser(userId)
