@@ -13,6 +13,9 @@ import javax.inject.Inject
 
 data class HomeUiState(
     val isRefreshing: Boolean = false,
+    val isPosting: Boolean = false,
+    /** Bumped after a successful post so the UI can refresh the feed. */
+    val feedVersion: Long = 0L,
     val error: String? = null
 )
 
@@ -58,19 +61,34 @@ class HomeViewModel @Inject constructor(
 
     fun createPost(type: PostType, content: String, mediaData: MediaData? = null) {
         viewModelScope.launch {
+            if (userId.isEmpty()) return@launch
+            _uiState.update { it.copy(isPosting = true, error = null) }
             try {
+                val user = authRepository.fetchUser(userId)
                 val post = Post(
                     userId = userId,
+                    userUsername = user.username.ifBlank { "user" },
+                    userAvatarUrl = user.avatarUrl,
                     type = type,
-                    content = content,
+                    content = content.trim().take(2000),
                     mediaData = mediaData,
                     timestamp = System.currentTimeMillis()
                 )
                 postRepository.createPost(post)
+                _uiState.update {
+                    it.copy(isPosting = false, feedVersion = it.feedVersion + 1, error = null)
+                }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(isPosting = false, error = e.message) }
             }
         }
+    }
+
+    /** Short thought for the home composer (same pipeline as [createPost]). */
+    fun postThought(text: String) {
+        val trimmed = text.trim()
+        if (userId.isEmpty() || trimmed.isEmpty() || trimmed.length > 2000) return
+        createPost(PostType.THOUGHT, trimmed)
     }
 
     fun deletePost(postId: String) {
