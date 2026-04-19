@@ -295,8 +295,7 @@ fun HomeScreen(
             ModalBottomSheet(
                 onDismissRequest = { showComposeSheet = false },
                 sheetState = composeSheetState,
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                tonalElevation = 0.dp
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 CreatePostComposerSheet(
                     text = composerText,

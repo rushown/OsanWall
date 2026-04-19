@@ -125,15 +125,6 @@ fun Navigation() {
                     }
                 )
             }
-            composable("chat") {
-                ChatListScreen(
-                    onOpenChat = { chatId, username, avatarUrl ->
-                        navController.navigate(
-                            "chat/${Uri.encode(chatId)}/${Uri.encode(username)}/${Uri.encode(avatarUrl)}"
-                        )
-                    }
-                )
-            }
             composable(
                 route = "chat/{chatId}/{username}/{avatarUrl}",
                 arguments = listOf(
@@ -150,6 +141,15 @@ fun Navigation() {
                     otherUsername = username,
                     otherAvatarUrl = avatarUrl,
                     onBack = { navController.popBackStack() }
+                )
+            }
+            composable("chat") {
+                ChatListScreen(
+                    onOpenChat = { chatId, username, avatarUrl ->
+                        navController.navigate(
+                            "chat/${Uri.encode(chatId)}/${Uri.encode(username)}/${Uri.encode(avatarUrl)}"
+                        )
+                    }
                 )
             }
             composable("notifications") {
