@@ -98,7 +98,8 @@ fun Navigation() {
                         } else {
                             showAuthSheet = true
                         }
-                    }
+                    },
+                    onOpenCreate = { showCreateSheet = true }
                 )
             }
             composable("discover") {
