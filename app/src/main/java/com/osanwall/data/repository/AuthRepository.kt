@@ -1,6 +1,7 @@
 package com.osanwall.data.repository
 
 import android.util.Patterns
+import com.osanwall.BuildConfig
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -19,6 +20,11 @@ class AuthRepository @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) {
+    companion object {
+        const val DEMO_EMAIL = "demo@osanwall.app"
+        const val DEMO_PASSWORD = "OsanWallDemo1"
+    }
+
     val currentUserId: String? get() = auth.currentUser?.uid
     val isLoggedIn: Boolean get() = auth.currentUser != null
 
@@ -38,7 +44,11 @@ class AuthRepository @Inject constructor(
             emit(Result.Success(user))
         } catch (e: Exception) {
             Timber.e(e, "Email sign in failed")
-            emit(Result.Error(mapAuthError(e.message), e))
+            if (BuildConfig.DEBUG && isDemoCredentials(email, password)) {
+                tryDemoSignIn()?.let { emit(Result.Success(it)) } ?: emit(Result.Error(mapAuthError(e.message), e))
+            } else {
+                emit(Result.Error(mapAuthError(e.message), e))
+            }
         }
     }
 
@@ -122,6 +132,32 @@ class AuthRepository @Inject constructor(
             emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(mapAuthError(e.message), e))
+        }
+    }
+
+    private fun isDemoCredentials(email: String, password: String): Boolean =
+        email.trim().equals(DEMO_EMAIL, ignoreCase = true) && password == DEMO_PASSWORD
+
+    /**
+     * Debug-only fallback when the demo email is not registered in Firebase yet.
+     * Requires Anonymous sign-in enabled in the Firebase project.
+     */
+    private suspend fun tryDemoSignIn(): User? {
+        if (!BuildConfig.DEBUG) return null
+        return try {
+            val anon = auth.signInAnonymously().await()
+            val uid = anon.user!!.uid
+            val demo = User(
+                id = uid,
+                email = DEMO_EMAIL,
+                username = "demo_explorer",
+                bio = "Demo account — explore OsanWall."
+            )
+            firestore.collection(Collections.USERS).document(uid).set(demo).await()
+            demo
+        } catch (e: Exception) {
+            Timber.e(e, "Demo sign-in fallback failed")
+            null
         }
     }
 
