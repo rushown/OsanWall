@@ -27,7 +27,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -144,27 +143,6 @@ fun HomeScreen(
                         viewModel.postThought(composerText)
                     },
                     focusRequester = composeFocus
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .clickable(onClick = onOpenExplore),
-                    readOnly = true,
-                    leadingIcon = { Icon(Icons.Default.Explore, contentDescription = null) },
-                    placeholder = { Text("Discover the digital nebula...") },
-                    shape = RoundedCornerShape(18.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.7f),
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.9f),
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                    )
                 )
             }
 
