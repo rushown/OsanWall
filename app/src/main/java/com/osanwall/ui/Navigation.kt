@@ -43,9 +43,20 @@ fun Navigation() {
         bottomBar = {
             OsanWallBottomBar(
                 currentRoute = currentRoute,
+                isLoggedIn = authState.isLoggedIn,
                 onNavigate = { route ->
                     when (route) {
-                        "create" -> showCreateSheet = true
+                        "chat" -> {
+                            if (authState.isLoggedIn) {
+                                navController.navigate("chat") {
+                                    popUpTo("home") { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            } else {
+                                showAuthSheet = true
+                            }
+                        }
                         "profile" -> {
                             if (authState.isLoggedIn) {
                                 navController.navigate("profile/me") {
