@@ -139,8 +139,8 @@ fun Navigation() {
         }
     }
 
-    if (showAuthSheet) {
-        AuthBottomSheet(
+    when {
+        showAuthSheet -> AuthBottomSheet(
             onDismiss = { showAuthSheet = false },
             onAuthenticated = {
                 showAuthSheet = false
@@ -149,10 +149,7 @@ fun Navigation() {
                 }
             }
         )
-    }
-
-    if (showCreateSheet) {
-        OsanWallActionSheet(
+        showCreateSheet -> OsanWallActionSheet(
             title = "Create on OsanWall",
             subtitle = "Choose a format to post: thought, song, movie, or book.",
             primaryLabel = "Start Creating",
