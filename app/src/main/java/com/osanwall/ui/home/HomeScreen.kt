@@ -312,78 +312,125 @@ fun HomeScreen(
 }
 
 @Composable
-private fun CreatePostComposer(
+private fun CreatePostPromptRow(
     isLoggedIn: Boolean,
-    text: String,
-    onTextChange: (String) -> Unit,
-    isPosting: Boolean,
-    onRequestAuth: () -> Unit,
-    onPost: () -> Unit,
-    focusRequester: FocusRequester
+    onOpenComposer: () -> Unit,
+    onRequestAuth: () -> Unit
 ) {
+    val frosted = Brush.horizontalGradient(
+        listOf(
+            MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.48f),
+            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.38f),
+            MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.44f)
+        )
+    )
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.75f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+            .padding(horizontal = 16.dp)
+            .clickable {
+                if (isLoggedIn) onOpenComposer() else onRequestAuth()
+            },
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.35f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.22f))
     ) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                UserAvatar(imageUrl = "", size = 44.dp, hasGradientBorder = true)
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (!isLoggedIn) {
-                        Text(
-                            "Sign in to share with OsanWall",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        TextButton(onClick = onRequestAuth, modifier = Modifier.align(Alignment.Start)) {
-                            Text("Sign in or sign up")
-                        }
-                    } else {
-                        OutlinedTextField(
-                            value = text,
-                            onValueChange = { if (it.length <= 2000) onTextChange(it) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(focusRequester),
-                            placeholder = { Text("What's on your mind?") },
-                            minLines = 2,
-                            maxLines = 6,
-                            shape = RoundedCornerShape(16.dp),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-                            keyboardActions = KeyboardActions(onDone = { if (text.isNotBlank() && !isPosting) onPost() }),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                                focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f)
-                            )
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "${text.length}/2000",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                if (isPosting) {
-                                    CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
-                                }
-                                TextButton(
-                                    onClick = onPost,
-                                    enabled = text.isNotBlank() && !isPosting
-                                ) {
-                                    Text("Post", fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                    }
-                }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(frosted)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            UserAvatar(imageUrl = "", size = 40.dp, hasGradientBorder = true)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.22f))
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = if (isLoggedIn) "What's on your mind?"
+                    else "Sign in to share what's on your mind…",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.88f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CreatePostComposerSheet(
+    text: String,
+    onTextChange: (String) -> Unit,
+    isPosting: Boolean,
+    onDismiss: () -> Unit,
+    onPost: () -> Unit,
+    focusRequester: FocusRequester
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .imePadding()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 28.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+            Text(
+                "New post",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            TextButton(
+                onClick = onPost,
+                enabled = text.isNotBlank() && !isPosting
+            ) {
+                Text("Post", fontWeight = FontWeight.ExtraBold)
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+            UserAvatar(imageUrl = "", size = 44.dp, hasGradientBorder = true)
+            OutlinedTextField(
+                value = text,
+                onValueChange = { if (it.length <= 2000) onTextChange(it) },
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(focusRequester),
+                placeholder = { Text("What's on your mind?") },
+                minLines = 4,
+                maxLines = 12,
+                shape = RoundedCornerShape(16.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
+                keyboardActions = KeyboardActions(onDone = { if (text.isNotBlank() && !isPosting) onPost() }),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.45f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                )
+            )
+        }
+        Spacer(Modifier.height(10.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "${text.length}/2000",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (isPosting) {
+                CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
             }
         }
     }
