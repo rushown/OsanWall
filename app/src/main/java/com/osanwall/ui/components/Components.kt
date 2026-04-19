@@ -155,6 +155,7 @@ fun GlassCard(
             .scale(scale)
             .clickable(
                 interactionSource = interactionSource,
+                indication = null,
                 onClick = onClick
             )
     } else {
@@ -189,7 +190,11 @@ fun PressableScaleBox(
     Box(
         modifier = modifier
             .scale(scale)
-            .clickable(interactionSource = interactionSource, onClick = onClick),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
         content = content
     )
 }
