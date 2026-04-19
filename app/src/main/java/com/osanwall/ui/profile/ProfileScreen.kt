@@ -22,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.osanwall.data.model.*
 import com.osanwall.ui.components.PressableScaleBox
+import com.osanwall.ui.components.ShimmerFeedItem
 import com.osanwall.ui.components.UserAvatar
 import com.osanwall.ui.components.shimmerEffect
 
@@ -322,7 +323,7 @@ private fun ProfileScreenSkeleton() {
             }
         }
         items(3) {
-            com.osanwall.ui.components.ShimmerFeedItem()
+            ShimmerFeedItem()
         }
     }
 }
