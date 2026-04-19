@@ -178,7 +178,7 @@ See **[SETUP.md](SETUP.md)** for the complete step-by-step guide.
 **TL;DR:**
 
 ```bash
-git clone https://github.com/your-username/OsanWall.git
+git clone https://github.com/rocean007/OsanWall.git
 cd OsanWall
 
 # 1. Add your google-services.json from Firebase Console
