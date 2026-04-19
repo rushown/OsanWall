@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.osanwall.data.model.*
+import com.osanwall.ui.components.GradientButton
 import com.osanwall.ui.components.PressableScaleBox
 import com.osanwall.ui.components.ShimmerFeedItem
 import com.osanwall.ui.components.UserAvatar
